@@ -14,17 +14,17 @@
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     ["@semantic-release/changelog", {
-      "changelogFile": "Assets/Tool/CHANGELOG.md"
+      "changelogFile": "Assets/PurrUI/CHANGELOG.md"
     }],
     ["semantic-release-replace-plugin", {
         "replacements": [
           {
-            "files": ["Assets/Tool/package.json"],
+            "files": ["Assets/PurrUI/package.json"],
             "from": "\"version\": \".*?\"",
             "to": "\"version\": \"${nextRelease.version}\"",
             "results": [
               {
-                "file": "Assets/Tool/package.json",
+                "file": "Assets/PurrUI/package.json",
                 "hasChanged": true,
                 "numMatches": 1,
                 "numReplacements": 1
@@ -35,17 +35,17 @@
         ]
     }],
     ["@iam1337/create-unitypackage", {
-      "packageRoot": "Assets/Tool",
+      "packageRoot": "Assets/PurrUI",
       "projectRoot": "./",
-      "output": "PurrNet_Tool_${nextRelease.version}.unitypackage"
+      "output": "PurrUI_${nextRelease.version}.unitypackage"
     }],
     ["@semantic-release/git", {
-        "assets": ["Assets/Tool/package.json", "Assets/Tool/CHANGELOG.md"],
+        "assets": ["Assets/PurrUI/package.json", "Assets/PurrUI/CHANGELOG.md"],
         "message": "ci(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
     }],
     ["@semantic-release/github", {
       "assets": [
-        {"path": "PurrNet_Tool_${nextRelease.version}.unitypackage", "label": "PurrNet_Tool_${nextRelease.version}.unitypackage"}
+        {"path": "PurrUI_${nextRelease.version}.unitypackage", "label": "PurrUI_${nextRelease.version}.unitypackage"}
       ]
     }]
   ]

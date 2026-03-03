@@ -1,12 +1,12 @@
 {
-  "name": "dev.purrnet.template",
+  "name": "dev.purrnet.ui",
   "version": "1.0.0",
   "author": {
     "name": "PurrNet Team",
     "url": "https://purrnet.dev/"
   },
-  "description": "A tool template",
-  "displayName": "PurrTool",
+  "description": "PurrNet UI",
+  "displayName": "PurrUI",
   "documentationUrl": "https://purrnet.gitbook.io/",
   "hideInEditor": false,
   "keywords": [
