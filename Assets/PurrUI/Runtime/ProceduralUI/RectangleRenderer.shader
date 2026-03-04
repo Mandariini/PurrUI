@@ -56,21 +56,34 @@ Shader "Hidden/PurrUI/RectangleRenderer"
             #pragma multi_compile_local _ UNITY_UI_CLIP_RECT
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
 
+            // Vertex attributes packed by OnPopulateMesh:
+            //   uv0: texU, texV, width, height
+            //   uv1: roundness (x, y, z, w)
+            //   uv2: outlineSize, shadowSize, shadowBlur, shadowPow
+            //   uv3: packedOutlineColor (xy), packedShadowColor (zw)
+            //   color: graphicColor * Graphic.color
+
             struct appdata
             {
                 float4 vertex   : POSITION;
                 float4 color    : COLOR;
-                float2 texcoord : TEXCOORD0;
+                float4 uv0      : TEXCOORD0;
+                float4 uv1      : TEXCOORD1;
+                float4 uv2      : TEXCOORD2;
+                float4 uv3      : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct v2f
             {
-                float4 vertex        : SV_POSITION;
-                fixed4 color         : COLOR;
-                float2 texcoord      : TEXCOORD0;
-                float2 sdfPosition   : TEXCOORD1;
-                float4 worldPosition : TEXCOORD2;
+                float4 vertex       : SV_POSITION;
+                fixed4 color        : COLOR;
+                float4 texAndSdf    : TEXCOORD0; // xy=texcoord, zw=sdfPosition
+                float4 roundness    : TEXCOORD1;
+                float4 params       : TEXCOORD2; // xy=halfSize, z=outlineSize, w=shadowSize
+                float4 params2      : TEXCOORD3; // x=shadowBlur, y=shadowPow, zw=worldPos
+                half4 outlineColor  : TEXCOORD4;
+                half4 shadowColor   : TEXCOORD5;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -79,18 +92,15 @@ Shader "Hidden/PurrUI/RectangleRenderer"
             fixed4 _TextureSampleAdd;
             float4 _ClipRect;
 
-            float4 _Roundness;
-            float _Padding;
-            float _OutlineSize;
-            fixed4 _GraphicColor;
-            fixed4 _OutlineColor;
-
-            float _ShadowSize;
-            float _ShadowBlur;
-            float _ShadowPow;
-            fixed4 _ShadowColor;
-
-            float2 _Size;
+            // Unpack a Color32 from 2 floats (r+g*256, b+a*256)
+            half4 UnpackColor(float2 packed)
+            {
+                half g = floor(packed.x / 256.0);
+                half r = packed.x - g * 256.0;
+                half a = floor(packed.y / 256.0);
+                half b = packed.y - a * 256.0;
+                return half4(r, g, b, a) / 255.0;
+            }
 
             v2f vert(appdata v)
             {
@@ -98,15 +108,23 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
 
-                OUT.worldPosition = v.vertex;
                 OUT.vertex = UnityObjectToClipPos(v.vertex);
                 OUT.color = v.color * _Color;
 
-                // Pre-transform UV and SDF position in vertex shader
-                float2 normalizedPadding = _Padding / _Size;
-                float2 uv = v.texcoord * (1 + normalizedPadding * 2) - normalizedPadding;
-                OUT.texcoord = uv;
-                OUT.sdfPosition = (uv - 0.5) * _Size;
+                // UV transform for padding
+                float2 size = v.uv0.zw;
+                float padding = v.uv2.x + v.uv2.y + v.uv2.z; // outline + shadow + blur
+                float2 normPad = padding / size;
+                float2 uv = v.uv0.xy * (1 + normPad * 2) - normPad;
+
+                OUT.texAndSdf = float4(uv, (uv - 0.5) * size);
+                OUT.roundness = v.uv1;
+                OUT.params = float4(size * 0.5, v.uv2.xy);
+                OUT.params2 = float4(v.uv2.zw, v.vertex.xy);
+
+                // Unpack colors in vertex shader (4 verts) instead of fragment (thousands)
+                OUT.outlineColor = UnpackColor(v.uv3.xy);
+                OUT.shadowColor = UnpackColor(v.uv3.zw);
 
                 return OUT;
             }
@@ -121,58 +139,56 @@ Shader "Hidden/PurrUI/RectangleRenderer"
 
             fixed4 frag(v2f IN) : SV_Target
             {
-                float2 halfSize = _Size * 0.5;
+                float2 halfSize = IN.params.xy;
+                float outlineSize = IN.params.z;
+                float shadowSize = IN.params.w;
+                float shadowBlur = IN.params2.x;
+                float shadowPow = IN.params2.y;
 
-                half4 graphic = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * _GraphicColor;
+                half4 graphic = tex2D(_MainTex, IN.texAndSdf.xy) + _TextureSampleAdd;
 
-                float dist = sdRoundedBox(IN.sdfPosition, halfSize, _Roundness);
+                float dist = sdRoundedBox(IN.texAndSdf.zw, halfSize, IN.roundness);
                 float delta = fwidth(dist);
-
-                // Full-region coverages for correct Over compositing:
-                // each layer covers its full interior so the front layer
-                // occludes the back, and at AA edges the back layer
-                // fills the remaining coverage with no gap.
 
                 float fill = 1 - smoothstep(-delta, delta, dist);
 
-                float outline = _OutlineSize > 0
-                    ? 1 - smoothstep(_OutlineSize - delta, _OutlineSize + delta, dist)
+                float outline = outlineSize > 0
+                    ? 1 - smoothstep(outlineSize - delta, outlineSize + delta, dist)
                     : 0;
 
                 float shadow = 0;
-                float shadowRange = _ShadowSize + _ShadowBlur;
+                float shadowRange = shadowSize + shadowBlur;
                 if (shadowRange > 0)
                 {
-                    float shadowEdge = _OutlineSize + _ShadowSize;
+                    float shadowEdge = outlineSize + shadowSize;
                     shadow = 1 - smoothstep(
-                        shadowEdge - _ShadowBlur - delta,
+                        shadowEdge - shadowBlur - delta,
                         shadowEdge + delta,
                         dist);
-                    shadow = pow(shadow, _ShadowPow);
+                    shadow = pow(shadow, shadowPow);
                 }
 
-                // Premultiplied layer alphas
-                float gA = fill * graphic.a;
-                float oA = outline * _OutlineColor.a;
-                float sA = shadow * _ShadowColor.a;
+                // vertex.color = graphicColor * Graphic.color
+                // .a is master alpha (CanvasGroup compatible)
+                float masterAlpha = IN.color.a;
+                float gA = fill * graphic.a * masterAlpha;
+                float oA = outline * IN.outlineColor.a * masterAlpha;
+                float sA = shadow * IN.shadowColor.a * masterAlpha;
 
-                // Inlined Over(graphic, Over(outline, shadow)) in premultiplied space
+                // Inlined Over(fill, Over(outline, shadow)) in premultiplied space
                 float oneMinusGA = 1 - gA;
                 float oneMinusOA = 1 - oA;
 
                 half4 result;
-                result.rgb = graphic.rgb * gA
-                    + _OutlineColor.rgb * oA * oneMinusGA
-                    + _ShadowColor.rgb * sA * oneMinusOA * oneMinusGA;
+                result.rgb = graphic.rgb * IN.color.rgb * gA
+                    + IN.outlineColor.rgb * oA * oneMinusGA
+                    + IN.shadowColor.rgb * sA * oneMinusOA * oneMinusGA;
                 result.a = gA
                     + oA * oneMinusGA
                     + sA * oneMinusOA * oneMinusGA;
 
-                // Apply vertex color (Graphic.color) as tint in premultiplied space
-                result = half4(result.rgb * IN.color.rgb * IN.color.a, result.a * IN.color.a);
-
                 #ifdef UNITY_UI_CLIP_RECT
-                result *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
+                result *= UnityGet2DClipping(IN.params2.zw, _ClipRect);
                 #endif
 
                 #ifdef UNITY_UI_ALPHACLIP

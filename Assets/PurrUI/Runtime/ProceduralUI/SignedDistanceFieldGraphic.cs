@@ -6,17 +6,6 @@ namespace PurrNet.UI
     [RequireComponent(typeof(CanvasRenderer))]
     public class SignedDistanceFieldGraphic : MaskableGraphic
     {
-        static readonly int SIZE = Shader.PropertyToID("_Size");
-        static readonly int MAIN_TEX = Shader.PropertyToID("_MainTex");
-        static readonly int OUTLINE_SIZE = Shader.PropertyToID("_OutlineSize");
-        static readonly int OUTLINE_COLOR = Shader.PropertyToID("_OutlineColor");
-        static readonly int SHADOW_SIZE = Shader.PropertyToID("_ShadowSize");
-        static readonly int SHADOW_BLUR = Shader.PropertyToID("_ShadowBlur");
-        static readonly int SHADOW_POW = Shader.PropertyToID("_ShadowPow");
-        static readonly int SHADOW_COLOR = Shader.PropertyToID("_ShadowColor");
-        static readonly int GRAPHIC_COLOR = Shader.PropertyToID("_GraphicColor");
-        static readonly int PADDING = Shader.PropertyToID("_Padding");
-
         const string SHADER_NAME = "Hidden/PurrUI/RectangleRenderer";
 
         [SerializeField, HideInInspector] Shader _shader;
@@ -35,7 +24,7 @@ namespace PurrNet.UI
         [SerializeField, Min(0f)] float _shadowPower = 1f;
         [SerializeField] Color _shadowColor = Color.black;
 
-        Material _material;
+        static Material _sharedMaterial;
 
         float extraMargin => _outlineSize + _shadowSize + _shadowBlur;
 
@@ -45,10 +34,16 @@ namespace PurrNet.UI
         {
             get
             {
-                if (_material == null && _shader != null)
-                    _material = new Material(_shader) { hideFlags = HideFlags.HideAndDontSave };
-                return _material;
+                if (_sharedMaterial == null && _shader != null)
+                    _sharedMaterial = new Material(_shader) { hideFlags = HideFlags.HideAndDontSave };
+                return _sharedMaterial;
             }
+        }
+
+        protected override void OnEnable()
+        {
+            EnsureAdditionalCanvasChannels();
+            base.OnEnable();
         }
 
 #if UNITY_EDITOR
@@ -56,6 +51,7 @@ namespace PurrNet.UI
         {
             base.Reset();
             _shader = Shader.Find(SHADER_NAME);
+            EnsureAdditionalCanvasChannels();
         }
 
         protected override void OnValidate()
@@ -66,56 +62,27 @@ namespace PurrNet.UI
         }
 #endif
 
-        protected override void OnDestroy()
+        void EnsureAdditionalCanvasChannels()
         {
-            if (_material != null)
-            {
-#if UNITY_EDITOR
-                DestroyImmediate(_material);
-#else
-                Destroy(_material);
-#endif
-                _material = null;
-            }
-            base.OnDestroy();
+            if (!canvas) return;
+            var rootCanvas = canvas.rootCanvas;
+
+            const AdditionalCanvasShaderChannels required = AdditionalCanvasShaderChannels.TexCoord1
+                                                            | AdditionalCanvasShaderChannels.TexCoord2
+                                                            | AdditionalCanvasShaderChannels.TexCoord3;
+
+            rootCanvas.additionalShaderChannels |= required;
         }
 
-        protected virtual void UpdateMaterialProperties()
+        protected virtual Vector4 GetRoundness()
         {
-            var mat = defaultMaterial;
-            if (mat == null) return;
-
-            float width = rectTransform.rect.width;
-            float height = rectTransform.rect.height;
-
-            mat.SetVector(SIZE, new Vector2(width, height));
-            mat.SetTexture(MAIN_TEX, mainTexture);
-            mat.SetColor(GRAPHIC_COLOR, _graphicColor);
-            mat.SetFloat(OUTLINE_SIZE, _outlineSize);
-            mat.SetColor(OUTLINE_COLOR, _outlineColor);
-            mat.SetFloat(SHADOW_SIZE, _shadowSize);
-            mat.SetFloat(SHADOW_BLUR, _shadowBlur);
-            mat.SetFloat(SHADOW_POW, _shadowPower);
-            mat.SetColor(SHADOW_COLOR, _shadowColor);
-            mat.SetFloat(PADDING, extraMargin);
+            return Vector4.zero;
         }
 
-        public override void SetMaterialDirty()
+        static Vector2 PackColor(Color color)
         {
-            base.SetMaterialDirty();
-            UpdateMaterialProperties();
-        }
-
-        public override void SetLayoutDirty()
-        {
-            base.SetLayoutDirty();
-            UpdateMaterialProperties();
-        }
-
-        protected override void OnRectTransformDimensionsChange()
-        {
-            base.OnRectTransformDimensionsChange();
-            UpdateMaterialProperties();
+            Color32 c = color;
+            return new Vector2(c.r + c.g * 256f, c.b + c.a * 256f);
         }
 
         protected override void OnPopulateMesh(VertexHelper vh)
@@ -124,29 +91,53 @@ namespace PurrNet.UI
 
             float width = rectTransform.rect.width;
             float height = rectTransform.rect.height;
+
+            if (width <= 0f || height <= 0f)
+                return;
+
             float margin = extraMargin;
 
             var pivot = new Vector3(
                 rectTransform.pivot.x * width,
                 rectTransform.pivot.y * height, 0);
 
-            var vertex = UIVertex.simpleVert;
-            vertex.color = color;
+            // vertex.color = graphicColor x Graphic.color
+            // .a serves as master alpha for all layers (CanvasGroup compatible)
+            Color vertexColor = _graphicColor * color;
 
+            var packedOutline = PackColor(_outlineColor);
+            var packedShadow = PackColor(_shadowColor);
+
+            // uv1: roundness (from subclass)
+            // uv2: effect parameters
+            // uv3: packed outline + shadow colors
+            var roundness = GetRoundness();
+            var effects = new Vector4(_outlineSize, _shadowSize, _shadowBlur, _shadowPower);
+            var colors = new Vector4(
+                packedOutline.x, packedOutline.y,
+                packedShadow.x, packedShadow.y);
+
+            var vertex = UIVertex.simpleVert;
+            vertex.color = vertexColor;
+            vertex.uv1 = roundness;
+            vertex.uv2 = effects;
+            vertex.uv3 = colors;
+
+            // uv0: texU, texV, width, height
             vertex.position = new Vector3(-margin, -margin) - pivot;
-            vertex.uv0 = new Vector2(0, 0);
+            vertex.uv0 = new Vector4(0, 0, width, height);
             vh.AddVert(vertex);
 
             vertex.position = new Vector3(-margin, height + margin) - pivot;
-            vertex.uv0 = new Vector2(0, 1);
+            vertex.uv0 = new Vector4(0, 1, width, height);
             vh.AddVert(vertex);
 
             vertex.position = new Vector3(width + margin, height + margin) - pivot;
-            vertex.uv0 = new Vector2(1, 1);
+            vertex.uv0 = new Vector4(1, 1, width, height);
             vh.AddVert(vertex);
 
             vertex.position = new Vector3(width + margin, -margin) - pivot;
-            vertex.uv0 = new Vector2(1, 0);
+            vertex.uv0 = new Vector4(1, 0, width, height);
             vh.AddVert(vertex);
 
             vh.AddTriangle(0, 1, 2);
