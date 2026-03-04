@@ -2,7 +2,7 @@
     "name": "PurrUI.Editor",
     "rootNamespace": "PurrNet.Editor.UI",
     "references": [
-        "GUID:3be1760d1f689eb4795ca81bfa049e67"
+        "GUID:fa956321508a2aa4da8596c3e41eb158"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
