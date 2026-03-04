@@ -227,7 +227,7 @@ namespace PurrNet.UI
             return Vector4.zero;
         }
 
-        static Vector2 PackColor(Color color)
+        public static Vector2 PackColor(Color color)
         {
             Color32 c = color;
             return new Vector2(c.r + c.g * 256f, c.b + c.a * 256f);
