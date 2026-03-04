@@ -7,13 +7,13 @@ namespace PurrNet.UI
     [RequireComponent(typeof(CanvasGroup))]
     public class MonoView : MonoBehaviour
     {
-        [SerializeField] private bool _hidesWindowsBelow = false;
+        [SerializeField] private bool _cullWindowsBehind = false;
 
         public CanvasGroup canvasGroup { get; private set; }
 
         public ViewStack parentStack { get; private set; }
 
-        public bool hidesWindowsBelow => _hidesWindowsBelow;
+        public bool cullWindowsBehind => _cullWindowsBehind;
 
         public Canvas canvas { get; private set; }
 

@@ -74,7 +74,7 @@ namespace PurrNet.UI
             for (int i = _stack.Count - 1; i >= 0; i--)
             {
                 _stack[i].canvas.enabled = true;
-                if (_stack[i].hidesWindowsBelow)
+                if (_stack[i].cullWindowsBehind)
                 {
                     for (int j = i - 1; j >= 0; j--)
                         _stack[j].canvas.enabled = false;
