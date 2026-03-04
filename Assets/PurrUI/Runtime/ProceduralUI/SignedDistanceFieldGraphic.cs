@@ -10,21 +10,102 @@ namespace PurrNet.UI
 
         [SerializeField, HideInInspector] Shader _shader;
 
-        [Header("Graphic")]
         [SerializeField] Texture _texture;
         [SerializeField] Color _graphicColor = Color.white;
 
-        [Header("Outline")]
         [SerializeField, Min(0f)] float _outlineSize;
         [SerializeField] Color _outlineColor = Color.black;
 
-        [Header("Shadow")]
         [SerializeField, Min(0f)] float _shadowSize;
         [SerializeField, Min(0f)] float _shadowBlur;
         [SerializeField, Min(0f)] float _shadowPower = 1f;
         [SerializeField] Color _shadowColor = Color.black;
 
+        [SerializeField, Min(0f)] float _embossSize;
+        [SerializeField, Range(0f, 360f)] float _embossAngle = 135f;
+        [SerializeField, Range(0f, 1f)] float _embossStrength = 0.5f;
+        [SerializeField] Color _embossHighlightColor = Color.white;
+        [SerializeField] Color _embossShadowColor = Color.black;
+
         static Material _sharedMaterial;
+
+        public Texture texture
+        {
+            get => _texture;
+            set { _texture = value; SetVerticesDirty(); SetMaterialDirty(); }
+        }
+
+        public Color graphicColor
+        {
+            get => _graphicColor;
+            set { _graphicColor = value; SetVerticesDirty(); }
+        }
+
+        public float outlineSize
+        {
+            get => _outlineSize;
+            set { _outlineSize = value; SetVerticesDirty(); }
+        }
+
+        public Color outlineColor
+        {
+            get => _outlineColor;
+            set { _outlineColor = value; SetVerticesDirty(); }
+        }
+
+        public float shadowSize
+        {
+            get => _shadowSize;
+            set { _shadowSize = value; SetVerticesDirty(); }
+        }
+
+        public float shadowBlur
+        {
+            get => _shadowBlur;
+            set { _shadowBlur = value; SetVerticesDirty(); }
+        }
+
+        public float shadowPower
+        {
+            get => _shadowPower;
+            set { _shadowPower = value; SetVerticesDirty(); }
+        }
+
+        public Color shadowColor
+        {
+            get => _shadowColor;
+            set { _shadowColor = value; SetVerticesDirty(); }
+        }
+
+        public float embossSize
+        {
+            get => _embossSize;
+            set { _embossSize = value; SetVerticesDirty(); }
+        }
+
+        public float embossAngle
+        {
+            get => _embossAngle;
+            set { _embossAngle = value; SetVerticesDirty(); }
+        }
+
+        public float embossStrength
+        {
+            get => _embossStrength;
+            set { _embossStrength = value; SetVerticesDirty(); }
+        }
+
+        public Color embossHighlightColor
+        {
+            get => _embossHighlightColor;
+            set { _embossHighlightColor = value; SetVerticesDirty(); }
+        }
+
+        public Color embossShadowColor
+        {
+            get => _embossShadowColor;
+            set { _embossShadowColor = value; SetVerticesDirty(); }
+        }
 
         float extraMargin => _outlineSize + _shadowSize + _shadowBlur;
 
@@ -69,7 +150,9 @@ namespace PurrNet.UI
 
             const AdditionalCanvasShaderChannels required = AdditionalCanvasShaderChannels.TexCoord1
                                                             | AdditionalCanvasShaderChannels.TexCoord2
-                                                            | AdditionalCanvasShaderChannels.TexCoord3;
+                                                            | AdditionalCanvasShaderChannels.TexCoord3
+                                                            | AdditionalCanvasShaderChannels.Normal
+                                                            | AdditionalCanvasShaderChannels.Tangent;
 
             rootCanvas.additionalShaderChannels |= required;
         }
@@ -119,6 +202,10 @@ namespace PurrNet.UI
 
             var vertex = UIVertex.simpleVert;
             vertex.color = vertexColor;
+            vertex.normal = new Vector3(_embossSize, _embossAngle * Mathf.Deg2Rad, _embossStrength);
+            var packedHighlight = PackColor(_embossHighlightColor);
+            var packedShadowEmb = PackColor(_embossShadowColor);
+            vertex.tangent = new Vector4(packedHighlight.x, packedHighlight.y, packedShadowEmb.x, packedShadowEmb.y);
             vertex.uv1 = roundness;
             vertex.uv2 = effects;
             vertex.uv3 = colors;

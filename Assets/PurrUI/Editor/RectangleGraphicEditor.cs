@@ -1,0 +1,186 @@
+using PurrNet.UI;
+using UnityEditor;
+using UnityEngine;
+
+namespace PurrNet.Editor.UI
+{
+    [CustomEditor(typeof(RectangleGraphic))]
+    public class RectangleGraphicEditor : UnityEditor.Editor
+    {
+        // Shape
+        SerializedProperty _useMaxRoundness;
+        SerializedProperty _uniformRoundness;
+        SerializedProperty _roundnessInPixels;
+
+        // Graphic
+        SerializedProperty _texture;
+        SerializedProperty _graphicColor;
+
+        // Outline
+        SerializedProperty _outlineSize;
+        SerializedProperty _outlineColor;
+
+        // Shadow
+        SerializedProperty _shadowSize;
+        SerializedProperty _shadowBlur;
+        SerializedProperty _shadowPower;
+        SerializedProperty _shadowColor;
+
+        // Emboss
+        SerializedProperty _embossSize;
+        SerializedProperty _embossAngle;
+        SerializedProperty _embossStrength;
+        SerializedProperty _embossHighlightColor;
+        SerializedProperty _embossShadowColor;
+
+        // Built-in Graphic
+        SerializedProperty _raycastTarget;
+        SerializedProperty _raycastPadding;
+        SerializedProperty _maskable;
+
+        void OnEnable()
+        {
+            _useMaxRoundness = serializedObject.FindProperty("_useMaxRoundness");
+            _uniformRoundness = serializedObject.FindProperty("_uniformRoundness");
+            _roundnessInPixels = serializedObject.FindProperty("_roundnessInPixels");
+
+            _texture = serializedObject.FindProperty("_texture");
+            _graphicColor = serializedObject.FindProperty("_graphicColor");
+
+            _outlineSize = serializedObject.FindProperty("_outlineSize");
+            _outlineColor = serializedObject.FindProperty("_outlineColor");
+
+            _shadowSize = serializedObject.FindProperty("_shadowSize");
+            _shadowBlur = serializedObject.FindProperty("_shadowBlur");
+            _shadowPower = serializedObject.FindProperty("_shadowPower");
+            _shadowColor = serializedObject.FindProperty("_shadowColor");
+
+            _embossSize = serializedObject.FindProperty("_embossSize");
+            _embossAngle = serializedObject.FindProperty("_embossAngle");
+            _embossStrength = serializedObject.FindProperty("_embossStrength");
+            _embossHighlightColor = serializedObject.FindProperty("_embossHighlightColor");
+            _embossShadowColor = serializedObject.FindProperty("_embossShadowColor");
+
+            _raycastTarget = serializedObject.FindProperty("m_RaycastTarget");
+            _raycastPadding = serializedObject.FindProperty("m_RaycastPadding");
+            _maskable = serializedObject.FindProperty("m_Maskable");
+        }
+
+        public override void OnInspectorGUI()
+        {
+            serializedObject.Update();
+
+            // Graphic
+            BeginSection("Graphic");
+            EditorGUILayout.PropertyField(_texture);
+            EditorGUILayout.PropertyField(_graphicColor, new GUIContent("Color"));
+            EditorGUILayout.PropertyField(_raycastTarget);
+            EditorGUILayout.PropertyField(_raycastPadding);
+            EditorGUILayout.PropertyField(_maskable);
+            EndSection();
+
+            // Shape
+            BeginSection("Shape");
+            EditorGUILayout.PropertyField(_useMaxRoundness);
+
+            if (!_useMaxRoundness.boolValue)
+            {
+                EditorGUILayout.PropertyField(_uniformRoundness);
+
+                if (_uniformRoundness.boolValue)
+                {
+                    var v = _roundnessInPixels.vector4Value;
+                    float val = EditorGUILayout.FloatField("Roundness", v.x);
+                    if (!Mathf.Approximately(val, v.x))
+                        _roundnessInPixels.vector4Value = new Vector4(val, val, val, val);
+                }
+                else
+                {
+                    var v = _roundnessInPixels.vector4Value;
+                    v.x = EditorGUILayout.FloatField("Top Left", v.x);
+                    v.y = EditorGUILayout.FloatField("Top Right", v.y);
+                    v.z = EditorGUILayout.FloatField("Bottom Right", v.z);
+                    v.w = EditorGUILayout.FloatField("Bottom Left", v.w);
+                    _roundnessInPixels.vector4Value = v;
+                }
+            }
+
+            EndSection();
+
+            // Outline
+            BeginSection("Outline");
+            FloatWithColorSwatch(_outlineSize, _outlineColor, "Size");
+            EndSection();
+
+            // Shadow
+            BeginSection("Shadow");
+            FloatWithColorSwatch(_shadowSize, _shadowColor, "Size");
+
+            if (_shadowSize.floatValue > 0f)
+            {
+                EditorGUILayout.PropertyField(_shadowBlur, new GUIContent("Blur"));
+                EditorGUILayout.PropertyField(_shadowPower, new GUIContent("Power"));
+            }
+
+            EndSection();
+
+            // Emboss
+            BeginSection("Emboss");
+            EditorGUILayout.PropertyField(_embossSize, new GUIContent("Size"));
+
+            if (_embossSize.floatValue > 0f)
+            {
+                EditorGUILayout.PropertyField(_embossAngle, new GUIContent("Angle"));
+                EditorGUILayout.PropertyField(_embossStrength, new GUIContent("Strength"));
+                EditorGUILayout.PropertyField(_embossHighlightColor, new GUIContent("Highlight Color"));
+                EditorGUILayout.PropertyField(_embossShadowColor, new GUIContent("Shadow Color"));
+            }
+
+            EndSection();
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        static GUIStyle _sectionStyle;
+
+        static GUIStyle sectionStyle
+        {
+            get
+            {
+                if (_sectionStyle == null)
+                {
+                    _sectionStyle = new GUIStyle(EditorStyles.helpBox)
+                    {
+                        padding = new RectOffset(14, 0, 0, 0),
+                        margin = new RectOffset(0, 0, 2, 2)
+                    };
+                }
+                return _sectionStyle;
+            }
+        }
+
+        static void BeginSection(string title)
+        {
+            EditorGUILayout.BeginVertical(sectionStyle);
+            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+        }
+
+        static void EndSection()
+        {
+            EditorGUILayout.EndVertical();
+        }
+
+        static void FloatWithColorSwatch(SerializedProperty floatProp, SerializedProperty colorProp, string label)
+        {
+            const float colorWidth = 50f;
+            const float gap = 4f;
+
+            var rect = EditorGUILayout.GetControlRect();
+            var floatRect = new Rect(rect.x, rect.y, rect.width - colorWidth - gap, rect.height);
+            var colorRect = new Rect(rect.xMax - colorWidth, rect.y, colorWidth, rect.height);
+
+            EditorGUI.PropertyField(floatRect, floatProp, new GUIContent(label));
+            EditorGUI.PropertyField(colorRect, colorProp, GUIContent.none);
+        }
+    }
+}

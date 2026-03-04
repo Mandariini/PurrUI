@@ -66,6 +66,8 @@ Shader "Hidden/PurrUI/RectangleRenderer"
             struct appdata
             {
                 float4 vertex   : POSITION;
+                float3 normal   : NORMAL;
+                float4 tangent  : TANGENT;
                 float4 color    : COLOR;
                 float4 uv0      : TEXCOORD0;
                 float4 uv1      : TEXCOORD1;
@@ -84,6 +86,9 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 float4 params2      : TEXCOORD3; // x=shadowBlur, y=shadowPow, zw=worldPos
                 half4 outlineColor  : TEXCOORD4;
                 half4 shadowColor   : TEXCOORD5;
+                float3 emboss       : TEXCOORD6; // x=size, y=angle, z=strength
+                half4 embossHColor  : TEXCOORD7;
+                half4 embossLColor  : TEXCOORD8;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -125,6 +130,9 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 // Unpack colors in vertex shader (4 verts) instead of fragment (thousands)
                 OUT.outlineColor = UnpackColor(v.uv3.xy);
                 OUT.shadowColor = UnpackColor(v.uv3.zw);
+                OUT.emboss = v.normal;
+                OUT.embossHColor = UnpackColor(v.tangent.xy);
+                OUT.embossLColor = UnpackColor(v.tangent.zw);
 
                 return OUT;
             }
@@ -170,6 +178,30 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                     shadow = pow(shadow, shadowPow);
                 }
 
+                // Emboss: offset SDF samples along light direction for 3D bevel
+                half3 fillRgb = graphic.rgb * IN.color.rgb;
+
+                float embossSize = IN.emboss.x;
+                if (embossSize > 0)
+                {
+                    float2 lightDir = float2(cos(IN.emboss.y), sin(IN.emboss.y));
+                    float2 offset = lightDir * embossSize;
+
+                    float dA = sdRoundedBox(IN.texAndSdf.zw + offset, halfSize, IN.roundness);
+                    float dB = sdRoundedBox(IN.texAndSdf.zw - offset, halfSize, IN.roundness);
+
+                    // Directional derivative ≈ dot(surfaceNormal, lightDir)
+                    float light = clamp((dA - dB) / (embossSize * 2.0), -1.0, 1.0);
+                    light = sign(light) * pow(abs(light), 1.0 + (1.0 - IN.emboss.z) * 4.0);
+
+                    // Band mask: emboss only near the edge, fades inward
+                    float bandMask = smoothstep(-embossSize, 0, dist) * fill;
+
+                    // Lerp toward highlight or shadow tint
+                    half3 tint = light > 0 ? IN.embossHColor.rgb : IN.embossLColor.rgb;
+                    fillRgb = lerp(fillRgb, tint, abs(light) * bandMask);
+                }
+
                 // vertex.color = graphicColor * Graphic.color
                 // .a is master alpha (CanvasGroup compatible)
                 float masterAlpha = IN.color.a;
@@ -182,7 +214,7 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 float oneMinusOA = 1 - oA;
 
                 half4 result;
-                result.rgb = graphic.rgb * IN.color.rgb * gA
+                result.rgb = fillRgb * gA
                     + IN.outlineColor.rgb * oA * oneMinusGA
                     + IN.shadowColor.rgb * sA * oneMinusOA * oneMinusGA;
                 result.a = gA

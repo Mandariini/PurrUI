@@ -4,10 +4,27 @@ namespace PurrNet.UI
 {
     public class RectangleGraphic : SignedDistanceFieldGraphic
     {
-        [Header("Shape")]
         [SerializeField] bool _useMaxRoundness;
         [SerializeField] bool _uniformRoundness;
         [SerializeField] Vector4 _roundnessInPixels;
+
+        public bool useMaxRoundness
+        {
+            get => _useMaxRoundness;
+            set { _useMaxRoundness = value; SetVerticesDirty(); }
+        }
+
+        public bool uniformRoundness
+        {
+            get => _uniformRoundness;
+            set { _uniformRoundness = value; SetVerticesDirty(); }
+        }
+
+        public Vector4 roundnessInPixels
+        {
+            get => _roundnessInPixels;
+            set { _roundnessInPixels = value; SetVerticesDirty(); }
+        }
 
         protected override Vector4 GetRoundness()
         {
