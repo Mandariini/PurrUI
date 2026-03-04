@@ -15,6 +15,13 @@ namespace PurrNet.Editor.UI
         // Graphic
         SerializedProperty _texture;
         SerializedProperty _graphicColor;
+        SerializedProperty _gradientType;
+        SerializedProperty _gradientColor;
+        SerializedProperty _gradientQuality;
+        SerializedProperty _radialMode;
+        SerializedProperty _gradientSize;
+        SerializedProperty _gradient;
+        SerializedProperty _gradientAngle;
 
         // Outline
         SerializedProperty _outlineSize;
@@ -46,6 +53,13 @@ namespace PurrNet.Editor.UI
 
             _texture = serializedObject.FindProperty("_texture");
             _graphicColor = serializedObject.FindProperty("_graphicColor");
+            _gradientType = serializedObject.FindProperty("_gradientType");
+            _gradientColor = serializedObject.FindProperty("_gradientColor");
+            _gradientQuality = serializedObject.FindProperty("_gradientQuality");
+            _radialMode = serializedObject.FindProperty("_radialMode");
+            _gradientSize = serializedObject.FindProperty("_gradientSize");
+            _gradient = serializedObject.FindProperty("_gradient");
+            _gradientAngle = serializedObject.FindProperty("_gradientAngle");
 
             _outlineSize = serializedObject.FindProperty("_outlineSize");
             _outlineColor = serializedObject.FindProperty("_outlineColor");
@@ -70,13 +84,33 @@ namespace PurrNet.Editor.UI
         {
             serializedObject.Update();
 
-            // Graphic
-            BeginSection("Graphic");
+            // Color
+            BeginSection("Color");
             EditorGUILayout.PropertyField(_texture);
             EditorGUILayout.PropertyField(_graphicColor, new GUIContent("Color"));
-            EditorGUILayout.PropertyField(_raycastTarget);
-            EditorGUILayout.PropertyField(_raycastPadding);
-            EditorGUILayout.PropertyField(_maskable);
+            EditorGUILayout.PropertyField(_gradientType, new GUIContent("Gradient"));
+
+            var gt = (GradientType)_gradientType.enumValueIndex;
+
+            if (gt == GradientType.Vertical || gt == GradientType.Horizontal ||
+                gt == GradientType.Radial)
+                EditorGUILayout.PropertyField(_gradientColor, new GUIContent("Gradient Color"));
+
+            if (gt == GradientType.Radial || gt == GradientType.Gradient)
+                EditorGUILayout.PropertyField(_gradientQuality, new GUIContent("Quality"));
+
+            if (gt == GradientType.Radial)
+            {
+                EditorGUILayout.PropertyField(_radialMode, new GUIContent("Mode"));
+                EditorGUILayout.PropertyField(_gradientSize, new GUIContent("Size"));
+            }
+
+            if (gt == GradientType.Gradient)
+            {
+                EditorGUILayout.PropertyField(_gradient, new GUIContent("Gradient"));
+                EditorGUILayout.PropertyField(_gradientAngle, new GUIContent("Angle"));
+            }
+
             EndSection();
 
             // Shape
@@ -136,6 +170,13 @@ namespace PurrNet.Editor.UI
                 EditorGUILayout.PropertyField(_embossShadowColor, new GUIContent("Shadow Color"));
             }
 
+            EndSection();
+
+            // Raycast
+            BeginSection("Raycast");
+            EditorGUILayout.PropertyField(_raycastTarget);
+            EditorGUILayout.PropertyField(_raycastPadding);
+            EditorGUILayout.PropertyField(_maskable);
             EndSection();
 
             serializedObject.ApplyModifiedProperties();
