@@ -196,7 +196,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 7
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -674,14 +674,14 @@ MonoBehaviour:
   _shader: {fileID: 4800000, guid: 0758f85608bde4543a44ac4b9ba345e6, type: 3}
   _texture: {fileID: 0}
   _graphicColor: {r: 1, g: 1, b: 1, a: 1}
-  _outlineSize: 0.25
+  _outlineSize: 0
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  _shadowSize: 4.22
+  _shadowSize: 0
   _shadowBlur: 6.15
   _shadowPower: 1
   _shadowColor: {r: 0, g: 0, b: 0, a: 1}
   _useMaxRoundness: 0
-  _uniformRoundness: 0
+  _uniformRoundness: 1
   _roundnessInPixels: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1133752392
 CanvasRenderer:
@@ -759,7 +759,7 @@ MonoBehaviour:
   _shader: {fileID: 4800000, guid: 0758f85608bde4543a44ac4b9ba345e6, type: 3}
   _texture: {fileID: 0}
   _graphicColor: {r: 0, g: 0, b: 0, a: 1}
-  _outlineSize: 5.76
+  _outlineSize: 36.93
   _outlineColor: {r: 0, g: 1, b: 0.8580704, a: 1}
   _shadowSize: 12.02
   _shadowBlur: 1.07
@@ -767,7 +767,7 @@ MonoBehaviour:
   _shadowColor: {r: 0, g: 0, b: 0, a: 1}
   _useMaxRoundness: 0
   _uniformRoundness: 0
-  _roundnessInPixels: {x: 0, y: 0, z: 0, w: 0}
+  _roundnessInPixels: {x: 1, y: 1, z: 1, w: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
