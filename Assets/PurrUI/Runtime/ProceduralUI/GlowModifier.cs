@@ -23,6 +23,10 @@ namespace PurrNet.UI
         [SerializeField, Min(0f)] float _blur = 10f;
         [SerializeField, Min(0.01f)] float _power = 1f;
 
+        [SerializeField] bool _noFill;
+        [SerializeField, Min(0f)] float _frameWidth = 5f;
+        [SerializeField] FramePlacement _framePlacement;
+
         [SerializeField] bool _useMaxRoundness;
         [SerializeField] bool _uniformRoundness;
         [SerializeField] Vector4 _roundnessInPixels;
@@ -109,6 +113,24 @@ namespace PurrNet.UI
             set { _power = Mathf.Max(0.01f, value); _dirty = true; }
         }
 
+        public bool noFill
+        {
+            get => _noFill;
+            set { _noFill = value; _dirty = true; }
+        }
+
+        public float frameWidth
+        {
+            get => _frameWidth;
+            set { _frameWidth = Mathf.Max(0f, value); _dirty = true; }
+        }
+
+        public FramePlacement framePlacement
+        {
+            get => _framePlacement;
+            set { _framePlacement = value; _dirty = true; }
+        }
+
         public bool useMaxRoundness
         {
             get => _useMaxRoundness;
@@ -142,13 +164,29 @@ namespace PurrNet.UI
         void OnDestroy()
         {
             if (!_glowGraphic) return;
+
+            if (_glowGraphic.owner != this)
+            {
+                _glowGraphic = null;
+                return;
+            }
+
             var go = _glowGraphic.gameObject;
             _glowGraphic = null;
 
+            if (!go) return;
+
             if (Application.isPlaying)
+            {
                 Destroy(go);
+            }
             else
-                DestroyImmediate(go);
+            {
+#if UNITY_EDITOR
+                // Defer to avoid "Destroying object multiple times" during teardown
+                UnityEditor.EditorApplication.delayCall += () => { if (go) DestroyImmediate(go); };
+#endif
+            }
         }
 
 #if UNITY_EDITOR
@@ -186,12 +224,19 @@ namespace PurrNet.UI
         {
             if (_glowGraphic && _glowGraphic.gameObject != gameObject)
             {
-                _glowGraphic.gameObject.SetActive(true);
-                return;
+                // Verify this glow actually belongs to us (not stolen via duplication)
+                if (_glowGraphic.owner == this)
+                {
+                    _glowGraphic.gameObject.SetActive(true);
+                    return;
+                }
+
+                // Shared with another modifier (e.g. after Ctrl+D) — drop reference
+                _glowGraphic = null;
             }
 
-            // Stale or missing — create new
-            _glowGraphic = null;
+            if (_glowGraphic)
+                return;
 
             var go = new GameObject("~Glow")
             {
@@ -200,6 +245,7 @@ namespace PurrNet.UI
             go.transform.SetParent(transform.parent, false);
             _glowGraphic = go.AddComponent<GlowGraphic>();
             _glowGraphic.raycastTarget = false;
+            _glowGraphic.owner = this;
 
             SyncTransform();
         }
@@ -255,6 +301,9 @@ namespace PurrNet.UI
 
             if (!rect)
             {
+                _glowGraphic.noFill = _noFill;
+                _glowGraphic.frameWidth = _frameWidth;
+                _glowGraphic.framePlacement = _framePlacement;
                 _glowGraphic.useMaxRoundness = _useMaxRoundness;
                 _glowGraphic.uniformRoundness = _uniformRoundness;
                 _glowGraphic.roundnessInPixels = _roundnessInPixels;

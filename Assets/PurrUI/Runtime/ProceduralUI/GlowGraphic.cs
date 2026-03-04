@@ -29,6 +29,8 @@ namespace PurrNet.UI
         [SerializeField, Min(0f)] float _blur = 10f;
         [SerializeField, Min(0.01f)] float _power = 1f;
 
+        [System.NonSerialized] internal GlowModifier owner;
+
         static Material _glowMaterial;
 
         public override Material defaultMaterial
@@ -238,6 +240,39 @@ namespace PurrNet.UI
             }
         }
 
+        void GetEffectiveFrame(out bool nf, out float fw, out FramePlacement pl)
+        {
+            if (_source)
+            {
+                nf = _source.noFill;
+                fw = _source.frameWidth;
+                pl = _source.framePlacement;
+            }
+            else
+            {
+                nf = noFill;
+                fw = frameWidth;
+                pl = framePlacement;
+            }
+        }
+
+        float GetEncodedFrame()
+        {
+            GetEffectiveFrame(out bool nf, out float fw, out FramePlacement pl);
+            if (!nf) return 0f;
+            return -(1f + (int)pl * 4096f + Mathf.Round(fw));
+        }
+
+        float GetFrameOutwardExtension()
+        {
+            GetEffectiveFrame(out bool nf, out float fw, out FramePlacement pl);
+            if (!nf) return 0f;
+            float fwr = Mathf.Round(fw);
+            if (pl == FramePlacement.Center) return fwr * 0.5f;
+            if (pl == FramePlacement.Outside) return fwr;
+            return 0f;
+        }
+
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
@@ -260,20 +295,21 @@ namespace PurrNet.UI
             PopulateGlowQuad(vh, width, height);
         }
 
-        void AddGlowVert(VertexHelper vh, Color col, Vector3 pos, Vector4 uv0, Vector4 roundness)
+        void AddGlowVert(VertexHelper vh, Color col, Vector3 pos, Vector4 uv0, Vector4 roundness, float encodedFrame)
         {
             var vertex = UIVertex.simpleVert;
             vertex.color = col;
             vertex.position = pos;
             vertex.uv0 = uv0;
             vertex.uv1 = roundness;
-            vertex.uv2 = new Vector4(_spread, _blur, _power, 0f);
+            vertex.uv2 = new Vector4(_spread, _blur, _power, encodedFrame);
             vh.AddVert(vertex);
         }
 
         void PopulateGlowQuad(VertexHelper vh, float width, float height)
         {
-            float margin = _spread + _blur + 1f;
+            float encodedFrame = GetEncodedFrame();
+            float margin = _spread + _blur + GetFrameOutwardExtension() + 1f;
 
             float rectW = rectTransform.rect.width;
             float rectH = rectTransform.rect.height;
@@ -307,13 +343,13 @@ namespace PurrNet.UI
             }
 
             AddGlowVert(vh, c0, new Vector3(offX - margin, offY - margin) - pivot,
-                new Vector4(0, 0, width, height), roundness);
+                new Vector4(0, 0, width, height), roundness, encodedFrame);
             AddGlowVert(vh, c1, new Vector3(offX - margin, offY + height + margin) - pivot,
-                new Vector4(0, 1, width, height), roundness);
+                new Vector4(0, 1, width, height), roundness, encodedFrame);
             AddGlowVert(vh, c2, new Vector3(offX + width + margin, offY + height + margin) - pivot,
-                new Vector4(1, 1, width, height), roundness);
+                new Vector4(1, 1, width, height), roundness, encodedFrame);
             AddGlowVert(vh, c3, new Vector3(offX + width + margin, offY - margin) - pivot,
-                new Vector4(1, 0, width, height), roundness);
+                new Vector4(1, 0, width, height), roundness, encodedFrame);
 
             vh.AddTriangle(0, 1, 2);
             vh.AddTriangle(2, 3, 0);
@@ -322,7 +358,8 @@ namespace PurrNet.UI
         void PopulateGlowSubdivided(VertexHelper vh, float width, float height)
         {
             int n = Mathf.Clamp(_glowGradientQuality, 2, 20);
-            float margin = _spread + _blur + 1f;
+            float encodedFrame = GetEncodedFrame();
+            float margin = _spread + _blur + GetFrameOutwardExtension() + 1f;
 
             float rectW = rectTransform.rect.width;
             float rectH = rectTransform.rect.height;
@@ -399,7 +436,7 @@ namespace PurrNet.UI
                     vertex.position = new Vector3(posX, posY, 0) - pivot;
                     vertex.uv0 = new Vector4(texU, texV, width, height);
                     vertex.uv1 = roundness;
-                    vertex.uv2 = new Vector4(_spread, _blur, _power, 0f);
+                    vertex.uv2 = new Vector4(_spread, _blur, _power, encodedFrame);
                     vh.AddVert(vertex);
                 }
             }

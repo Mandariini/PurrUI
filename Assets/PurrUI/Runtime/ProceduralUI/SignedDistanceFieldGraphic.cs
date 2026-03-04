@@ -19,6 +19,13 @@ namespace PurrNet.UI
         Ellipse
     }
 
+    public enum FramePlacement
+    {
+        Inside,
+        Center,
+        Outside
+    }
+
     [RequireComponent(typeof(CanvasRenderer))]
     public class SignedDistanceFieldGraphic : MaskableGraphic
     {
@@ -35,6 +42,10 @@ namespace PurrNet.UI
         [SerializeField, Min(0.01f)] float _gradientSize = 1f;
         [SerializeField] Gradient _gradient;
         [SerializeField, Range(0f, 360f)] float _gradientAngle;
+
+        [SerializeField] bool _noFill;
+        [SerializeField, Min(0f)] float _frameWidth = 5f;
+        [SerializeField] FramePlacement _framePlacement;
 
         [SerializeField, Min(0f)] float _outlineSize;
         [SerializeField] Color _outlineColor = Color.black;
@@ -106,6 +117,24 @@ namespace PurrNet.UI
             set { _gradientAngle = value; SetVerticesDirty(); }
         }
 
+        public bool noFill
+        {
+            get => _noFill;
+            set { _noFill = value; SetVerticesDirty(); }
+        }
+
+        public float frameWidth
+        {
+            get => _frameWidth;
+            set { _frameWidth = Mathf.Max(0f, value); SetVerticesDirty(); }
+        }
+
+        public FramePlacement framePlacement
+        {
+            get => _framePlacement;
+            set { _framePlacement = value; SetVerticesDirty(); }
+        }
+
         public float outlineSize
         {
             get => _outlineSize;
@@ -172,7 +201,19 @@ namespace PurrNet.UI
             set { _embossShadowColor = value; SetVerticesDirty(); }
         }
 
-        float extraMargin => _outlineSize + _shadowSize + _shadowBlur + 1f;
+        float FrameOutwardExtension
+        {
+            get
+            {
+                if (!_noFill) return 0f;
+                float fw = Mathf.Round(_frameWidth);
+                if (_framePlacement == FramePlacement.Center) return fw * 0.5f;
+                if (_framePlacement == FramePlacement.Outside) return fw;
+                return 0f;
+            }
+        }
+
+        float extraMargin => _outlineSize + FrameOutwardExtension + _shadowSize + _shadowBlur + 1f;
 
         public override Texture mainTexture => _texture ? _texture : s_WhiteTexture;
 
@@ -239,7 +280,18 @@ namespace PurrNet.UI
             var packedShadow = PackColor(_shadowColor);
 
             var roundness = GetRoundness();
-            var effects = new Vector4(_outlineSize, _shadowSize, _shadowBlur, _shadowPower);
+
+            // Encode frame info into existing channels:
+            //   uv2.x: negative signals frame mode. abs = 1 + placement * 4096 + outlineSize
+            //   uv2.w: shadowPower + round(frameWidth) * 256
+            float frameWidthRounded = _noFill ? Mathf.Round(_frameWidth) : 0f;
+
+            float encodedOutline = _noFill
+                ? -(1f + (int)_framePlacement * 4096f + _outlineSize)
+                : _outlineSize;
+            float encodedShadowPow = _shadowPower + frameWidthRounded * 256f;
+
+            var effects = new Vector4(encodedOutline, _shadowSize, _shadowBlur, encodedShadowPow);
             var colors = new Vector4(
                 packedOutline.x, packedOutline.y,
                 packedShadow.x, packedShadow.y);

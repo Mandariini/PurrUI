@@ -23,6 +23,11 @@ namespace PurrNet.Editor.UI
         SerializedProperty _gradient;
         SerializedProperty _gradientAngle;
 
+        // Frame
+        SerializedProperty _noFill;
+        SerializedProperty _frameWidth;
+        SerializedProperty _framePlacement;
+
         // Outline
         SerializedProperty _outlineSize;
         SerializedProperty _outlineColor;
@@ -60,6 +65,10 @@ namespace PurrNet.Editor.UI
             _gradientSize = serializedObject.FindProperty("_gradientSize");
             _gradient = serializedObject.FindProperty("_gradient");
             _gradientAngle = serializedObject.FindProperty("_gradientAngle");
+
+            _noFill = serializedObject.FindProperty("_noFill");
+            _frameWidth = serializedObject.FindProperty("_frameWidth");
+            _framePlacement = serializedObject.FindProperty("_framePlacement");
 
             _outlineSize = serializedObject.FindProperty("_outlineSize");
             _outlineColor = serializedObject.FindProperty("_outlineColor");
@@ -137,6 +146,14 @@ namespace PurrNet.Editor.UI
                     v.w = EditorGUILayout.FloatField("Bottom Left", v.w);
                     _roundnessInPixels.vector4Value = v;
                 }
+            }
+
+            EditorGUILayout.PropertyField(_noFill, new GUIContent("No Fill"));
+
+            if (_noFill.boolValue)
+            {
+                EditorGUILayout.PropertyField(_frameWidth, new GUIContent("Frame Width"));
+                EditorGUILayout.PropertyField(_framePlacement, new GUIContent("Placement"));
             }
 
             EndSection();

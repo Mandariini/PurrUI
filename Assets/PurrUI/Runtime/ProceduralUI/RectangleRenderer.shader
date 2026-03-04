@@ -59,7 +59,9 @@ Shader "Hidden/PurrUI/RectangleRenderer"
             // Vertex attributes packed by OnPopulateMesh:
             //   uv0: texU, texV, width, height
             //   uv1: roundness (x, y, z, w)
-            //   uv2: outlineSize, shadowSize, shadowBlur, shadowPow
+            //   uv2: encodedOutline, shadowSize, shadowBlur, encodedShadowPow
+            //        encodedOutline: >= 0 → outlineSize; < 0 → frame mode, abs = 1 + placement*4096 + outlineSize
+            //        encodedShadowPow: shadowPow + round(frameWidth)*256
             //   uv3: packedOutlineColor (xy), packedShadowColor (zw)
             //   color: graphicColor * Graphic.color
 
@@ -118,7 +120,24 @@ Shader "Hidden/PurrUI/RectangleRenderer"
 
                 // UV transform for padding
                 float2 size = v.uv0.zw;
-                float padding = v.uv2.x + v.uv2.y + v.uv2.z + 1.0; // outline + shadow + blur + 1px margin
+                float rawOutline = v.uv2.x;
+                float outlineExtent;
+                if (rawOutline < -0.5)
+                {
+                    float absVal = abs(rawOutline) - 1.0;
+                    float placement = floor(absVal / 4096.0 + 0.001);
+                    float olSize = absVal - placement * 4096.0;
+                    float fw = floor(v.uv2.w / 256.0 + 0.001);
+                    float outerEdge = placement < 0.5 ? 0.0
+                                    : placement < 1.5 ? fw * 0.5
+                                    : fw;
+                    outlineExtent = olSize + outerEdge;
+                }
+                else
+                {
+                    outlineExtent = rawOutline;
+                }
+                float padding = outlineExtent + v.uv2.y + v.uv2.z + 1.0; // outline+frame + shadow + blur + 1px
                 float2 normPad = padding / size;
                 float2 uv = v.uv0.xy * (1 + normPad * 2) - normPad;
 
@@ -148,24 +167,69 @@ Shader "Hidden/PurrUI/RectangleRenderer"
             fixed4 frag(v2f IN) : SV_Target
             {
                 float2 halfSize = IN.params.xy;
-                float outlineSize = IN.params.z;
+                float rawOutline = IN.params.z;
                 float shadowSize = IN.params.w;
                 float shadowBlur = IN.params2.x;
-                float shadowPow = IN.params2.y;
+
+                // Decode frame mode from encoded outline (negative = frame on)
+                bool frameMode = rawOutline < -0.5;
+                float outlineSize, outerEdge, innerEdge;
+                float shadowPow;
+
+                if (frameMode)
+                {
+                    float absVal = abs(rawOutline) - 1.0;
+                    float placement = floor(absVal / 4096.0 + 0.001);
+                    outlineSize = absVal - placement * 4096.0;
+
+                    float fw = floor(IN.params2.y / 256.0 + 0.001);
+                    shadowPow = IN.params2.y - fw * 256.0;
+
+                    // Compute edges from placement and frameWidth
+                    if (placement < 0.5)       { outerEdge = 0.0;      innerEdge = -fw; }      // Inside
+                    else if (placement < 1.5)  { outerEdge = fw * 0.5; innerEdge = -fw * 0.5; } // Center
+                    else                       { outerEdge = fw;       innerEdge = 0.0; }       // Outside
+                }
+                else
+                {
+                    outlineSize = rawOutline;
+                    outerEdge = 0;
+                    innerEdge = 0;
+                    shadowPow = IN.params2.y;
+                }
 
                 half4 graphic = tex2D(_MainTex, IN.texAndSdf.xy) + _TextureSampleAdd;
 
                 float dist = sdRoundedBox(IN.texAndSdf.zw, halfSize, IN.roundness);
-                float delta = fwidth(dist);
 
-                // Outward-only AA: shapes are solid up to their SDF boundary
-                // and only fade outside. Adjacent elements share a solid seam.
-                float fill = 1 - smoothstep(0, delta, dist);
+                // In frame mode, derive a ring SDF from the shape SDF.
+                // ring_sdf < 0 inside the ring wall, > 0 in the hole and outside.
+                // All effects then naturally wrap both inner and outer edges.
+                float ringCenter = 0;
+                float ringHalf = 0;
+                float sdf;
+                if (frameMode)
+                {
+                    ringCenter = (outerEdge + innerEdge) * 0.5;
+                    ringHalf = (outerEdge - innerEdge) * 0.5;
+                    sdf = abs(dist - ringCenter) - ringHalf;
+                }
+                else
+                {
+                    sdf = dist;
+                }
 
+                float delta = fwidth(sdf);
+
+                // Fill
+                float fill = 1 - smoothstep(0, delta, sdf);
+
+                // Outline: band just outside the ring surface
                 float outline = outlineSize > 0
-                    ? 1 - smoothstep(outlineSize, outlineSize + delta, dist)
+                    ? 1 - smoothstep(outlineSize, outlineSize + delta, sdf)
                     : 0;
 
+                // Shadow: beyond outline
                 float shadow = 0;
                 float shadowRange = shadowSize + shadowBlur;
                 if (shadowRange > 0)
@@ -174,7 +238,7 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                     shadow = 1 - smoothstep(
                         shadowEdge - shadowBlur,
                         shadowEdge + delta,
-                        dist);
+                        sdf);
                     shadow = pow(shadow, shadowPow);
                 }
 
@@ -190,15 +254,21 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                     float dA = sdRoundedBox(IN.texAndSdf.zw + offset, halfSize, IN.roundness);
                     float dB = sdRoundedBox(IN.texAndSdf.zw - offset, halfSize, IN.roundness);
 
+                    // Apply ring transform to offset samples too
+                    if (frameMode)
+                    {
+                        dA = abs(dA - ringCenter) - ringHalf;
+                        dB = abs(dB - ringCenter) - ringHalf;
+                    }
+
                     // Directional derivative ≈ dot(surfaceNormal, lightDir)
                     float light = clamp((dA - dB) / (embossSize * 2.0), -1.0, 1.0);
                     light = sign(light) * pow(abs(light), 1.0 + (1.0 - IN.emboss.z) * 4.0);
 
                     // Band mask: emboss only near the edge, fades inward
-                    float bandMask = smoothstep(-embossSize, 0, dist);
+                    float bandMask = smoothstep(-embossSize, 0, sdf);
 
                     // Lerp toward highlight or shadow tint
-                    // Use saturate(fill/delta) to mask out AA fringe — emboss only where fill is solid
                     half3 tint = light > 0 ? IN.embossHColor.rgb : IN.embossLColor.rgb;
                     fillRgb = lerp(fillRgb, tint, abs(light) * bandMask * saturate(fill * 8));
                 }
