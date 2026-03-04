@@ -158,9 +158,9 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 float dist = sdRoundedBox(IN.texAndSdf.zw, halfSize, IN.roundness);
                 float delta = fwidth(dist);
 
-                // Negative emboss.x encodes fill softness (used by GlowGraphic)
-                float fillSoftness = IN.emboss.x < 0 ? -IN.emboss.x : 0;
-                float fill = 1 - smoothstep(0, max(delta, fillSoftness), dist);
+                // Outward-only AA: shapes are solid up to their SDF boundary
+                // and only fade outside. Adjacent elements share a solid seam.
+                float fill = 1 - smoothstep(0, delta, dist);
 
                 float outline = outlineSize > 0
                     ? 1 - smoothstep(outlineSize, outlineSize + delta, dist)
@@ -173,7 +173,7 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                     float shadowEdge = outlineSize + shadowSize;
                     shadow = 1 - smoothstep(
                         shadowEdge - shadowBlur,
-                        shadowEdge + max(delta, fillSoftness),
+                        shadowEdge + delta,
                         dist);
                     shadow = pow(shadow, shadowPow);
                 }
@@ -181,7 +181,7 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 // Emboss: offset SDF samples along light direction for 3D bevel
                 half3 fillRgb = graphic.rgb * IN.color.rgb;
 
-                float embossSize = max(IN.emboss.x, 0);
+                float embossSize = IN.emboss.x;
                 if (embossSize > 0)
                 {
                     float2 lightDir = float2(cos(IN.emboss.y), sin(IN.emboss.y));

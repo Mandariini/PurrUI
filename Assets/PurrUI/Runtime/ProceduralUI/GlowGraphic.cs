@@ -5,8 +5,12 @@ namespace PurrNet.UI
 {
     public class GlowGraphic : SignedDistanceFieldGraphic
     {
+        const string GLOW_SHADER_NAME = "Hidden/PurrUI/GlowRenderer";
+
+        [SerializeField, HideInInspector] Shader _glowShader;
+
         [SerializeField] RectangleGraphic _source;
-        [SerializeField, Min(0f)] float _extraSize;
+        [SerializeField] float _extraSize;
 
         [SerializeField] bool _useMaxRoundness;
         [SerializeField] bool _uniformRoundness;
@@ -22,8 +26,20 @@ namespace PurrNet.UI
         [SerializeField, Range(0f, 360f)] float _glowGradientAngle;
 
         [SerializeField, Min(0f)] float _spread;
-        [SerializeField, Min(0f)] float _blur;
-        [SerializeField, Min(0f)] float _power = 1f;
+        [SerializeField, Min(0f)] float _blur = 10f;
+        [SerializeField, Min(0.01f)] float _power = 1f;
+
+        static Material _glowMaterial;
+
+        public override Material defaultMaterial
+        {
+            get
+            {
+                if (_glowMaterial == null && _glowShader != null)
+                    _glowMaterial = new Material(_glowShader) { hideFlags = HideFlags.HideAndDontSave };
+                return _glowMaterial;
+            }
+        }
 
         public RectangleGraphic source
         {
@@ -34,7 +50,7 @@ namespace PurrNet.UI
         public float extraSize
         {
             get => _extraSize;
-            set { _extraSize = Mathf.Max(0f, value); SetVerticesDirty(); }
+            set { _extraSize = value; SetVerticesDirty(); }
         }
 
         public bool useMaxRoundness
@@ -118,7 +134,7 @@ namespace PurrNet.UI
         public float power
         {
             get => _power;
-            set { _power = Mathf.Max(0f, value); SetVerticesDirty(); }
+            set { _power = Mathf.Max(0.01f, value); SetVerticesDirty(); }
         }
 
         RectangleGraphic _trackedSource;
@@ -157,8 +173,16 @@ namespace PurrNet.UI
         }
 
 #if UNITY_EDITOR
+        protected override void Reset()
+        {
+            base.Reset();
+            _glowShader = Shader.Find(GLOW_SHADER_NAME);
+        }
+
         protected override void OnValidate()
         {
+            if (!_glowShader)
+                _glowShader = Shader.Find(GLOW_SHADER_NAME);
             base.OnValidate();
             TrackSource();
         }
@@ -236,18 +260,15 @@ namespace PurrNet.UI
             PopulateGlowQuad(vh, width, height);
         }
 
-        UIVertex BuildGlowVertex(Color glowCol)
+        void AddGlowVert(VertexHelper vh, Color col, Vector3 pos, Vector4 uv0, Vector4 roundness)
         {
-            var packedGlow = PackColor(glowCol);
-            var roundness = GetRoundness();
-
             var vertex = UIVertex.simpleVert;
+            vertex.color = col;
+            vertex.position = pos;
+            vertex.uv0 = uv0;
             vertex.uv1 = roundness;
-            vertex.uv2 = new Vector4(0f, _spread, _blur, _power);
-            vertex.uv3 = new Vector4(0f, 0f, packedGlow.x, packedGlow.y);
-            vertex.normal = new Vector3(-_blur, 0f, 0f); // negative = fill softness
-            vertex.tangent = Vector4.zero;
-            return vertex;
+            vertex.uv2 = new Vector4(_spread, _blur, _power, 0f);
+            vh.AddVert(vertex);
         }
 
         void PopulateGlowQuad(VertexHelper vh, float width, float height)
@@ -257,13 +278,14 @@ namespace PurrNet.UI
             float rectW = rectTransform.rect.width;
             float rectH = rectTransform.rect.height;
 
-            // Center the shape on the rect
             float offX = (rectW - width) * 0.5f;
             float offY = (rectH - height) * 0.5f;
 
             var pivot = new Vector3(
                 rectTransform.pivot.x * rectW,
                 rectTransform.pivot.y * rectH, 0);
+
+            var roundness = GetRoundness();
 
             Color colorA = _glowColor * color;
             Color colorB = _glowGradientType != GradientType.None
@@ -285,25 +307,16 @@ namespace PurrNet.UI
             }
 
             AddGlowVert(vh, c0, new Vector3(offX - margin, offY - margin) - pivot,
-                new Vector4(0, 0, width, height));
+                new Vector4(0, 0, width, height), roundness);
             AddGlowVert(vh, c1, new Vector3(offX - margin, offY + height + margin) - pivot,
-                new Vector4(0, 1, width, height));
+                new Vector4(0, 1, width, height), roundness);
             AddGlowVert(vh, c2, new Vector3(offX + width + margin, offY + height + margin) - pivot,
-                new Vector4(1, 1, width, height));
+                new Vector4(1, 1, width, height), roundness);
             AddGlowVert(vh, c3, new Vector3(offX + width + margin, offY - margin) - pivot,
-                new Vector4(1, 0, width, height));
+                new Vector4(1, 0, width, height), roundness);
 
             vh.AddTriangle(0, 1, 2);
             vh.AddTriangle(2, 3, 0);
-        }
-
-        void AddGlowVert(VertexHelper vh, Color col, Vector3 pos, Vector4 uv0)
-        {
-            var vertex = BuildGlowVertex(col);
-            vertex.color = col;
-            vertex.position = pos;
-            vertex.uv0 = uv0;
-            vh.AddVert(vertex);
         }
 
         void PopulateGlowSubdivided(VertexHelper vh, float width, float height)
@@ -321,14 +334,14 @@ namespace PurrNet.UI
                 rectTransform.pivot.x * rectW,
                 rectTransform.pivot.y * rectH, 0);
 
+            var roundness = GetRoundness();
+
             Color masterColor = color;
             Color colorA = _glowColor * masterColor;
             Color colorB = _glowGradientColor * masterColor;
 
             float angleRad = _glowGradientAngle * Mathf.Deg2Rad;
             var gradDir = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad));
-
-            var roundness = GetRoundness();
 
             int cols = n + 1;
             for (int y = 0; y <= n; y++)
@@ -381,17 +394,12 @@ namespace PurrNet.UI
                             break;
                     }
 
-                    var packedGlow = PackColor(col);
-
                     var vertex = UIVertex.simpleVert;
                     vertex.color = col;
                     vertex.position = new Vector3(posX, posY, 0) - pivot;
                     vertex.uv0 = new Vector4(texU, texV, width, height);
                     vertex.uv1 = roundness;
-                    vertex.uv2 = new Vector4(0f, _spread, _blur, _power);
-                    vertex.uv3 = new Vector4(0f, 0f, packedGlow.x, packedGlow.y);
-                    vertex.normal = new Vector3(-_blur, 0f, 0f);
-                    vertex.tangent = Vector4.zero;
+                    vertex.uv2 = new Vector4(_spread, _blur, _power, 0f);
                     vh.AddVert(vertex);
                 }
             }
