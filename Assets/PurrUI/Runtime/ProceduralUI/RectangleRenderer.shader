@@ -118,7 +118,7 @@ Shader "Hidden/PurrUI/RectangleRenderer"
 
                 // UV transform for padding
                 float2 size = v.uv0.zw;
-                float padding = v.uv2.x + v.uv2.y + v.uv2.z; // outline + shadow + blur
+                float padding = v.uv2.x + v.uv2.y + v.uv2.z + 1.0; // outline + shadow + blur + 1px margin
                 float2 normPad = padding / size;
                 float2 uv = v.uv0.xy * (1 + normPad * 2) - normPad;
 

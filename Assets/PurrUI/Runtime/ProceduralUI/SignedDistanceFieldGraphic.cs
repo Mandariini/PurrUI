@@ -107,7 +107,7 @@ namespace PurrNet.UI
             set { _embossShadowColor = value; SetVerticesDirty(); }
         }
 
-        float extraMargin => _outlineSize + _shadowSize + _shadowBlur;
+        float extraMargin => _outlineSize + _shadowSize + _shadowBlur + 1f;
 
         public override Texture mainTexture => _texture ? _texture : s_WhiteTexture;
 
