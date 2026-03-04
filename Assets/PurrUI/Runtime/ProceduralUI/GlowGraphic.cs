@@ -256,21 +256,20 @@ namespace PurrNet.UI
             }
         }
 
-        float GetEncodedFrame()
+        void GetFrameEncoding(out float encodedFrame, out float outwardExtension)
         {
             GetEffectiveFrame(out bool nf, out float fw, out FramePlacement pl);
-            if (!nf) return 0f;
-            return -(1f + (int)pl * 4096f + Mathf.Round(fw));
-        }
-
-        float GetFrameOutwardExtension()
-        {
-            GetEffectiveFrame(out bool nf, out float fw, out FramePlacement pl);
-            if (!nf) return 0f;
+            if (!nf)
+            {
+                encodedFrame = 0f;
+                outwardExtension = 0f;
+                return;
+            }
             float fwr = Mathf.Round(fw);
-            if (pl == FramePlacement.Center) return fwr * 0.5f;
-            if (pl == FramePlacement.Outside) return fwr;
-            return 0f;
+            encodedFrame = -(1f + (int)pl * 4096f + fwr);
+            if (pl == FramePlacement.Center) outwardExtension = fwr * 0.5f;
+            else if (pl == FramePlacement.Outside) outwardExtension = fwr;
+            else outwardExtension = 0f;
         }
 
         protected override void OnPopulateMesh(VertexHelper vh)
@@ -308,8 +307,8 @@ namespace PurrNet.UI
 
         void PopulateGlowQuad(VertexHelper vh, float width, float height)
         {
-            float encodedFrame = GetEncodedFrame();
-            float margin = _spread + _blur + GetFrameOutwardExtension() + 1f;
+            GetFrameEncoding(out float encodedFrame, out float frameExt);
+            float margin = _spread + _blur + frameExt + 1f;
 
             float rectW = rectTransform.rect.width;
             float rectH = rectTransform.rect.height;
@@ -358,8 +357,8 @@ namespace PurrNet.UI
         void PopulateGlowSubdivided(VertexHelper vh, float width, float height)
         {
             int n = Mathf.Clamp(_glowGradientQuality, 2, 20);
-            float encodedFrame = GetEncodedFrame();
-            float margin = _spread + _blur + GetFrameOutwardExtension() + 1f;
+            GetFrameEncoding(out float encodedFrame, out float frameExt);
+            float margin = _spread + _blur + frameExt + 1f;
 
             float rectW = rectTransform.rect.width;
             float rectH = rectTransform.rect.height;
@@ -380,21 +379,30 @@ namespace PurrNet.UI
             float angleRad = _glowGradientAngle * Mathf.Deg2Rad;
             var gradDir = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad));
 
+            // Hoist invariants out of the loop
+            var glowParams = new Vector4(_spread, _blur, _power, encodedFrame);
+            float posMinX = offX - margin;
+            float posRangeX = width + margin * 2f;
+            float posMinY = offY - margin;
+            float posRangeY = height + margin * 2f;
+
+            var vertex = UIVertex.simpleVert;
+            vertex.uv1 = roundness;
+            vertex.uv2 = glowParams;
+
             int cols = n + 1;
             for (int y = 0; y <= n; y++)
             {
                 float fy = (float)y / n;
+                float posY = posMinY + posRangeY * fy - pivot.y;
+
                 for (int x = 0; x <= n; x++)
                 {
                     float fx = (float)x / n;
 
-                    float posX = Mathf.Lerp(offX - margin, offX + width + margin, fx);
-                    float posY = Mathf.Lerp(offY - margin, offY + height + margin, fy);
+                    vertex.position = new Vector3(posMinX + posRangeX * fx - pivot.x, posY, 0);
+                    vertex.uv0 = new Vector4(fx, fy, width, height);
 
-                    float texU = fx;
-                    float texV = fy;
-
-                    Color col;
                     switch (_glowGradientType)
                     {
                         case GradientType.Radial:
@@ -402,8 +410,8 @@ namespace PurrNet.UI
                             float t;
                             if (_glowRadialMode == RadialMode.Ellipse)
                             {
-                                float dx = texU - 0.5f;
-                                float dy = texV - 0.5f;
+                                float dx = fx - 0.5f;
+                                float dy = fy - 0.5f;
                                 t = Mathf.Sqrt(dx * dx + dy * dy) * 2f;
                             }
                             else
@@ -411,32 +419,26 @@ namespace PurrNet.UI
                                 float refDim = _glowRadialMode == RadialMode.CircleCover
                                     ? Mathf.Max(width, height)
                                     : Mathf.Min(width, height);
-                                float dx = (texU - 0.5f) * width;
-                                float dy = (texV - 0.5f) * height;
+                                float dx = (fx - 0.5f) * width;
+                                float dy = (fy - 0.5f) * height;
                                 t = Mathf.Sqrt(dx * dx + dy * dy) / (refDim * 0.5f);
                             }
-                            col = Color.Lerp(colorA, colorB, Mathf.Clamp01(t / _glowGradientSize));
+                            vertex.color = Color.Lerp(colorA, colorB, Mathf.Clamp01(t / _glowGradientSize));
                             break;
                         }
                         case GradientType.Gradient:
                         {
                             float t = Mathf.Clamp01(
-                                (texU - 0.5f) * gradDir.x + (texV - 0.5f) * gradDir.y + 0.5f);
-                            col = (_glowGradient != null ? _glowGradient.Evaluate(t) : Color.white)
+                                (fx - 0.5f) * gradDir.x + (fy - 0.5f) * gradDir.y + 0.5f);
+                            vertex.color = (_glowGradient != null ? _glowGradient.Evaluate(t) : Color.white)
                                   * masterColor;
                             break;
                         }
                         default:
-                            col = colorA;
+                            vertex.color = colorA;
                             break;
                     }
 
-                    var vertex = UIVertex.simpleVert;
-                    vertex.color = col;
-                    vertex.position = new Vector3(posX, posY, 0) - pivot;
-                    vertex.uv0 = new Vector4(texU, texV, width, height);
-                    vertex.uv1 = roundness;
-                    vertex.uv2 = new Vector4(_spread, _blur, _power, encodedFrame);
                     vh.AddVert(vertex);
                 }
             }

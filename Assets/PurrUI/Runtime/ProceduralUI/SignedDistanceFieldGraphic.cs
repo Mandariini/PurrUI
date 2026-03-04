@@ -392,24 +392,26 @@ namespace PurrNet.UI
 
             var vertex = BuildBaseVertex();
 
+            // Hoist invariants out of the loop
+            float posMinX = -margin;
+            float posRangeX = width + margin * 2f;
+            float posMinY = -margin;
+            float posRangeY = height + margin * 2f;
+
             // Build (n+1) x (n+1) vertex grid
             int cols = n + 1;
             for (int y = 0; y <= n; y++)
             {
                 float fy = (float)y / n;
+                float posY = posMinY + posRangeY * fy - pivot.y;
+
                 for (int x = 0; x <= n; x++)
                 {
                     float fx = (float)x / n;
 
-                    // Position: lerp across padded rect
-                    float posX = Mathf.Lerp(-margin, width + margin, fx);
-                    float posY = Mathf.Lerp(-margin, height + margin, fy);
-                    vertex.position = new Vector3(posX, posY, 0) - pivot;
+                    vertex.position = new Vector3(posMinX + posRangeX * fx - pivot.x, posY, 0);
 
-                    // UV: normalized [0,1] mapped through same padding as the 4-vert path
-                    float texU = Mathf.Lerp(0f, 1f, fx);
-                    float texV = Mathf.Lerp(0f, 1f, fy);
-                    vertex.uv0 = new Vector4(texU, texV, width, height);
+                    vertex.uv0 = new Vector4(fx, fy, width, height);
 
                     // Compute vertex color based on gradient type
                     switch (_gradientType)
@@ -419,8 +421,8 @@ namespace PurrNet.UI
                             float t;
                             if (_radialMode == RadialMode.Ellipse)
                             {
-                                float dx = texU - 0.5f;
-                                float dy = texV - 0.5f;
+                                float dx = fx - 0.5f;
+                                float dy = fy - 0.5f;
                                 t = Mathf.Sqrt(dx * dx + dy * dy) * 2f;
                             }
                             else
@@ -428,8 +430,8 @@ namespace PurrNet.UI
                                 float refDim = _radialMode == RadialMode.CircleCover
                                     ? Mathf.Max(width, height)
                                     : Mathf.Min(width, height);
-                                float dx = (texU - 0.5f) * width;
-                                float dy = (texV - 0.5f) * height;
+                                float dx = (fx - 0.5f) * width;
+                                float dy = (fy - 0.5f) * height;
                                 t = Mathf.Sqrt(dx * dx + dy * dy) / (refDim * 0.5f);
                             }
                             vertex.color = Color.Lerp(colorA, colorB, Mathf.Clamp01(t / _gradientSize));
@@ -437,8 +439,7 @@ namespace PurrNet.UI
                         }
                         case GradientType.Gradient:
                         {
-                            // Project UV onto angle direction, remap from [-0.5,0.5] to [0,1]
-                            float t = Mathf.Clamp01((texU - 0.5f) * gradDir.x + (texV - 0.5f) * gradDir.y + 0.5f);
+                            float t = Mathf.Clamp01((fx - 0.5f) * gradDir.x + (fy - 0.5f) * gradDir.y + 0.5f);
                             vertex.color = (_gradient != null ? _gradient.Evaluate(t) : Color.white) * masterColor;
                             break;
                         }
