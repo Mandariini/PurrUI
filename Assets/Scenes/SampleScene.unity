@@ -208,6 +208,7 @@ GameObject:
   m_Component:
   - component: {fileID: 198567390}
   - component: {fileID: 198567391}
+  - component: {fileID: 198567392}
   m_Layer: 0
   m_Name: Test
   m_TagString: Untagged
@@ -246,6 +247,19 @@ MonoBehaviour:
   _prefabs: {fileID: 11400000, guid: cfe1b0a4f8047e5488db29d5333d99e8, type: 2}
   _pushOnStart: {fileID: 90264453679707508, guid: 0c0ead83d3b75e14d80c94f6e18b5c9e, type: 3}
   _orderOffset: 0
+--- !u!114 &198567392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 198567389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6726db978bddcc47874869ff26bf1ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TestPushWindow
+  _stack: {fileID: 198567391}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
