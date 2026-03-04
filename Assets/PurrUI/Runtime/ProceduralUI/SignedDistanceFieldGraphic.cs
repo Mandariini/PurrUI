@@ -8,7 +8,6 @@ namespace PurrNet.UI
     {
         static readonly int SIZE = Shader.PropertyToID("_Size");
         static readonly int MAIN_TEX = Shader.PropertyToID("_MainTex");
-        static readonly int GRAPHIC_BLUR = Shader.PropertyToID("_GraphicBlur");
         static readonly int OUTLINE_SIZE = Shader.PropertyToID("_OutlineSize");
         static readonly int OUTLINE_COLOR = Shader.PropertyToID("_OutlineColor");
         static readonly int SHADOW_SIZE = Shader.PropertyToID("_ShadowSize");
@@ -25,7 +24,6 @@ namespace PurrNet.UI
         [Header("Graphic")]
         [SerializeField] Texture _texture;
         [SerializeField] Color _graphicColor = Color.white;
-        [SerializeField] float _graphicBlur;
 
         [Header("Outline")]
         [SerializeField, Min(0f)] float _outlineSize;
@@ -39,7 +37,7 @@ namespace PurrNet.UI
 
         Material _material;
 
-        float extraMargin => Mathf.Max(_outlineSize, _shadowSize);
+        float extraMargin => _outlineSize + _shadowSize + _shadowBlur;
 
         public override Texture mainTexture => _texture ? _texture : s_WhiteTexture;
 
@@ -93,7 +91,6 @@ namespace PurrNet.UI
             mat.SetVector(SIZE, new Vector2(width, height));
             mat.SetTexture(MAIN_TEX, mainTexture);
             mat.SetColor(GRAPHIC_COLOR, _graphicColor);
-            mat.SetFloat(GRAPHIC_BLUR, _graphicBlur);
             mat.SetFloat(OUTLINE_SIZE, _outlineSize);
             mat.SetColor(OUTLINE_COLOR, _outlineColor);
             mat.SetFloat(SHADOW_SIZE, _shadowSize);
@@ -129,11 +126,11 @@ namespace PurrNet.UI
             float height = rectTransform.rect.height;
             float margin = extraMargin;
 
-            Vector3 pivot = new Vector3(
+            var pivot = new Vector3(
                 rectTransform.pivot.x * width,
                 rectTransform.pivot.y * height, 0);
 
-            UIVertex vertex = UIVertex.simpleVert;
+            var vertex = UIVertex.simpleVert;
             vertex.color = color;
 
             vertex.position = new Vector3(-margin, -margin) - pivot;

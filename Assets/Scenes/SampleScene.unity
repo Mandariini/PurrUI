@@ -337,8 +337,8 @@ Camera:
   m_GameObject: {fileID: 330585543}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 1, g: 1, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -648,7 +648,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -62.52, y: 0}
+  m_AnchoredPosition: {x: -67.84, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1133752391
@@ -673,11 +673,11 @@ MonoBehaviour:
       m_Calls: []
   _shader: {fileID: 4800000, guid: 0758f85608bde4543a44ac4b9ba345e6, type: 3}
   _texture: {fileID: 0}
-  _graphicBlur: 0
-  _outlineSize: 0
-  _outlineColor: {r: 0, g: 0, b: 0, a: 1}
-  _shadowSize: 0
-  _shadowBlur: 0
+  _graphicColor: {r: 1, g: 1, b: 1, a: 1}
+  _outlineSize: 0.25
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _shadowSize: 4.22
+  _shadowBlur: 6.15
   _shadowPower: 1
   _shadowColor: {r: 0, g: 0, b: 0, a: 1}
   _useMaxRoundness: 0
@@ -758,11 +758,11 @@ MonoBehaviour:
       m_Calls: []
   _shader: {fileID: 4800000, guid: 0758f85608bde4543a44ac4b9ba345e6, type: 3}
   _texture: {fileID: 0}
-  _graphicBlur: 0
-  _outlineSize: 0
-  _outlineColor: {r: 0, g: 0, b: 0, a: 1}
-  _shadowSize: 0
-  _shadowBlur: 0
+  _graphicColor: {r: 0, g: 0, b: 0, a: 1}
+  _outlineSize: 5.76
+  _outlineColor: {r: 0, g: 1, b: 0.8580704, a: 1}
+  _shadowSize: 12.02
+  _shadowBlur: 1.07
   _shadowPower: 1
   _shadowColor: {r: 0, g: 0, b: 0, a: 1}
   _useMaxRoundness: 0
