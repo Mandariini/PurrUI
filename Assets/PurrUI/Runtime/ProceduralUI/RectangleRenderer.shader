@@ -150,10 +150,12 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 float dist = sdRoundedBox(IN.texAndSdf.zw, halfSize, IN.roundness);
                 float delta = fwidth(dist);
 
-                float fill = 1 - smoothstep(-delta, delta, dist);
+                // Outward-only AA: shapes are solid up to their SDF boundary
+                // and only fade outside. Adjacent elements share a solid seam.
+                float fill = 1 - smoothstep(0, delta, dist);
 
                 float outline = outlineSize > 0
-                    ? 1 - smoothstep(outlineSize - delta, outlineSize + delta, dist)
+                    ? 1 - smoothstep(outlineSize, outlineSize + delta, dist)
                     : 0;
 
                 float shadow = 0;
@@ -162,7 +164,7 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 {
                     float shadowEdge = outlineSize + shadowSize;
                     shadow = 1 - smoothstep(
-                        shadowEdge - shadowBlur - delta,
+                        shadowEdge - shadowBlur,
                         shadowEdge + delta,
                         dist);
                     shadow = pow(shadow, shadowPow);

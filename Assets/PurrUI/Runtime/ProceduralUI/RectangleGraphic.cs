@@ -11,8 +11,6 @@ namespace PurrNet.UI
 
         protected override Vector4 GetRoundness()
         {
-            const float minRoundness = 1f;
-
             float width = rectTransform.rect.width;
             float height = rectTransform.rect.height;
             float maxRoundness = Mathf.Min(width, height) * 0.5f;
@@ -23,14 +21,8 @@ namespace PurrNet.UI
             if (_uniformRoundness)
             {
                 float r = _roundnessInPixels.x;
-                if (r < minRoundness) r = minRoundness;
                 return new Vector4(r, r, r, r);
             }
-
-            if (_roundnessInPixels.x < minRoundness) _roundnessInPixels.x = minRoundness;
-            if (_roundnessInPixels.y < minRoundness) _roundnessInPixels.y = minRoundness;
-            if (_roundnessInPixels.z < minRoundness) _roundnessInPixels.z = minRoundness;
-            if (_roundnessInPixels.w < minRoundness) _roundnessInPixels.w = minRoundness;
 
             return _roundnessInPixels;
         }

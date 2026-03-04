@@ -188,18 +188,18 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
+  m_Camera: {fileID: 330585545}
+  m_PlaneDistance: 98.27
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 7
+  m_AdditionalShaderChannelsFlag: 15
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 79
   m_TargetDisplay: 0
 --- !u!224 &98625838
 RectTransform:
@@ -215,6 +215,7 @@ RectTransform:
   m_Children:
   - {fileID: 1631807383}
   - {fileID: 1133752390}
+  - {fileID: 1268050408}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -338,7 +339,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 1, g: 1, b: 1, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -648,7 +649,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -67.84, y: 0}
+  m_AnchoredPosition: {x: -252.9, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1133752391
@@ -673,16 +674,16 @@ MonoBehaviour:
       m_Calls: []
   _shader: {fileID: 4800000, guid: 0758f85608bde4543a44ac4b9ba345e6, type: 3}
   _texture: {fileID: 0}
-  _graphicColor: {r: 1, g: 1, b: 1, a: 1}
-  _outlineSize: 0
+  _graphicColor: {r: 0.764151, g: 0.764151, b: 0.764151, a: 1}
+  _outlineSize: 10.08
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  _shadowSize: 0
-  _shadowBlur: 6.15
+  _shadowSize: 29.7
+  _shadowBlur: 204.1
   _shadowPower: 1
-  _shadowColor: {r: 0, g: 0, b: 0, a: 1}
+  _shadowColor: {r: 1, g: 1, b: 1, a: 1}
   _useMaxRoundness: 0
-  _uniformRoundness: 1
-  _roundnessInPixels: {x: 0, y: 0, z: 0, w: 0}
+  _uniformRoundness: 0
+  _roundnessInPixels: {x: 20, y: 20, z: 20, w: 20}
 --- !u!222 &1133752392
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -690,6 +691,83 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1133752389}
+  m_CullTransparentMesh: 1
+--- !u!1 &1268050407
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1268050408}
+  - component: {fileID: 1268050410}
+  - component: {fileID: 1268050409}
+  m_Layer: 5
+  m_Name: GameObject (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1268050408
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1268050407}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 98625838}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -104.3, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1268050409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1268050407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9019e8485f71c44cb77ac3cf2487ff1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PurrUI.Runtime::PurrNet.UI.RectangleGraphic
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  _shader: {fileID: 4800000, guid: 0758f85608bde4543a44ac4b9ba345e6, type: 3}
+  _texture: {fileID: 0}
+  _graphicColor: {r: 0.65882355, g: 0.65882355, b: 0.65882355, a: 1}
+  _outlineSize: 8.69
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  _shadowSize: 0
+  _shadowBlur: 6.15
+  _shadowPower: 1
+  _shadowColor: {r: 0, g: 0, b: 0, a: 1}
+  _useMaxRoundness: 0
+  _uniformRoundness: 0
+  _roundnessInPixels: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1268050410
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1268050407}
   m_CullTransparentMesh: 1
 --- !u!1 &1631807382
 GameObject:
@@ -758,14 +836,14 @@ MonoBehaviour:
       m_Calls: []
   _shader: {fileID: 4800000, guid: 0758f85608bde4543a44ac4b9ba345e6, type: 3}
   _texture: {fileID: 0}
-  _graphicColor: {r: 0, g: 0, b: 0, a: 1}
+  _graphicColor: {r: 1, g: 0.7583035, b: 0, a: 1}
   _outlineSize: 36.93
   _outlineColor: {r: 0, g: 1, b: 0.8580704, a: 1}
-  _shadowSize: 12.02
-  _shadowBlur: 1.07
+  _shadowSize: 28.8
+  _shadowBlur: 0
   _shadowPower: 1
-  _shadowColor: {r: 0, g: 0, b: 0, a: 1}
-  _useMaxRoundness: 0
+  _shadowColor: {r: 0.36520195, g: 1, b: 0, a: 1}
+  _useMaxRoundness: 1
   _uniformRoundness: 0
   _roundnessInPixels: {x: 1, y: 1, z: 1, w: 1}
 --- !u!1660057539 &9223372036854775807
