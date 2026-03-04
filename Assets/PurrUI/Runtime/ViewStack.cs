@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -66,6 +67,13 @@ namespace PurrNet.UI
             instance.UpdateOrder(idx);
             UpdateVisibility();
 
+            var transition = instance.EnterTransition();
+            if (transition != null)
+            {
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunEnterTransition(instance, transition));
+            }
+
             return instance;
         }
 
@@ -105,6 +113,13 @@ namespace PurrNet.UI
             instance.UpdateOrder(idx + _orderOffset);
             UpdateVisibility();
 
+            var transition = instance.EnterTransition();
+            if (transition != null)
+            {
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunEnterTransition(instance, transition));
+            }
+
             return instance;
         }
 
@@ -118,7 +133,17 @@ namespace PurrNet.UI
 
             var top = _stack[^1];
             _stack.RemoveAt(_stack.Count - 1);
-            top.DestroyMe();
+
+            var transition = top.ExitTransition();
+            if (transition != null)
+            {
+                top.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(top, transition));
+            }
+            else
+            {
+                top.DestroyMe();
+            }
 
             if (_stack.Count > 0)
             {
@@ -155,7 +180,18 @@ namespace PurrNet.UI
             }
 
             _stack.RemoveAt(idx);
-            instance.DestroyMe();
+
+            var transition = instance.ExitTransition();
+            if (transition != null)
+            {
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(instance, transition));
+            }
+            else
+            {
+                instance.DestroyMe();
+            }
+
             UpdateOrder(idx);
             UpdateVisibility();
         }
@@ -177,6 +213,18 @@ namespace PurrNet.UI
             instance.transform.SetAsLastSibling();
             UpdateOrder(idx);
             UpdateVisibility();
+        }
+
+        private IEnumerator RunEnterTransition(MonoView view, IEnumerator transition)
+        {
+            yield return transition;
+            if (view) view.canvasGroup.blocksRaycasts = true;
+        }
+
+        private IEnumerator RunExitTransition(MonoView view, IEnumerator transition)
+        {
+            yield return transition;
+            if (view) view.DestroyMe();
         }
     }
 }

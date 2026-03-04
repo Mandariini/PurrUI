@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Collections;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace PurrNet.UI
@@ -42,7 +43,14 @@ namespace PurrNet.UI
 
         protected virtual void OnBecomeForeground() { }
 
-        public void DestroyMe()
+        public IEnumerator EnterTransition() => OnEnterTransition();
+
+        public IEnumerator ExitTransition() => OnExitTransition();
+
+        protected virtual IEnumerator OnEnterTransition() => null;
+        protected virtual IEnumerator OnExitTransition() => null;
+
+        internal void DestroyMe()
         {
             Destroy(gameObject);
         }

@@ -10,12 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3693dba75bd149b395059e46a2887115, type: 3}
-  m_Name: GameViews
+  m_Name: Built-in Views
   m_EditorClassIdentifier: PurrUI.Runtime::PurrNet.UI.ViewCollection
   autoGenerate: 1
   folders:
-  - {fileID: 102900000, guid: daf8eafbdc783a34f878c2943b03722a, type: 3}
-  - {fileID: 102900000, guid: fad524cd2df0ba048ac4d7efad5a4530, type: 3}
+  - {fileID: 102900000, guid: d6ac26f9500376b44bf9af8e9bd1a055, type: 3}
   views:
-  - {fileID: 1521283057624359636, guid: c2e0a8d9b39dc434fb38cde6e8873893, type: 3}
-  - {fileID: 5226482785298882029, guid: 0c12dc296e1623a409faf84a53188177, type: 3}
+  - {fileID: 90264453679707508, guid: 0c0ead83d3b75e14d80c94f6e18b5c9e, type: 3}
