@@ -200,7 +200,7 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                     // Lerp toward highlight or shadow tint
                     // Use saturate(fill/delta) to mask out AA fringe — emboss only where fill is solid
                     half3 tint = light > 0 ? IN.embossHColor.rgb : IN.embossLColor.rgb;
-                    fillRgb = lerp(fillRgb, tint, abs(light) * bandMask * saturate(fill * 2));
+                    fillRgb = lerp(fillRgb, tint, abs(light) * bandMask * saturate(fill * 8));
                 }
 
                 // vertex.color = graphicColor * Graphic.color

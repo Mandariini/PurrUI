@@ -365,15 +365,15 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   _gradientAngle: 140
-  _outlineSize: 1
-  _outlineColor: {r: 1, g: 0, b: 0, a: 1}
+  _outlineSize: 0
+  _outlineColor: {r: 1, g: 1, b: 1, a: 1}
   _shadowSize: 25.7
   _shadowBlur: 31.47
   _shadowPower: 7.27
   _shadowColor: {r: 0, g: 0, b: 0, a: 1}
   _embossSize: 48.4
   _embossAngle: 127
-  _embossStrength: 0.5
+  _embossStrength: 0.683
   _embossHighlightColor: {r: 1, g: 1, b: 1, a: 1}
   _embossShadowColor: {r: 1, g: 0.008803852, b: 0, a: 1}
   _useMaxRoundness: 1
