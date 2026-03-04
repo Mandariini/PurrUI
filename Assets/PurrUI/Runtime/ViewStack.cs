@@ -46,6 +46,12 @@ namespace PurrNet.UI
             return false;
         }
 
+        /// <summary>
+        /// Adds a new window to the top of the stack using the provided prefab.
+        /// The prefab must be a child of the WindowStack GameObject or its descendants.
+        /// </summary>
+        /// <param name="prefab"></param>
+        /// <returns></returns>
         public MonoView Push(MonoView prefab)
         {
             if (prefab == null)
@@ -91,6 +97,13 @@ namespace PurrNet.UI
             }
         }
 
+        /// <summary>
+        /// Adds a new window of the specified type to the top of the stack.
+        /// The prefab must be included in the WindowPrefabs collection.
+        /// If no prefab of that type is found, logs an error and does nothing.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public T Push<T>() where T : MonoView
         {
             if (!TryGet<T>(out var prefab))
@@ -123,6 +136,9 @@ namespace PurrNet.UI
             return instance;
         }
 
+        /// <summary>
+        /// Removes the top window from the stack. If the stack is empty, does nothing.
+        /// </summary>
         public void Pop()
         {
             if (_stack.Count == 0)
@@ -156,12 +172,19 @@ namespace PurrNet.UI
             UpdateVisibility();
         }
 
+        /// <summary>
+        /// Removes all windows from the stack. Windows are removed in order, so exit transitions will play correctly.
+        /// </summary>
         public void Clear()
         {
             while (_stack.Count > 0)
                 Pop();
         }
 
+        /// <summary>
+        /// Removes the specified instance from the stack, regardless of its position. If the instance is not in the stack, does nothing.
+        /// </summary>
+        /// <param name="instance"></param>
         public void Pop(MonoView instance)
         {
             int idx = _stack.IndexOf(instance);
@@ -196,6 +219,10 @@ namespace PurrNet.UI
             UpdateVisibility();
         }
 
+        /// <summary>
+        /// Moves the specified instance to the top of the stack. If the instance is not in the stack, does nothing.
+        /// </summary>
+        /// <param name="instance"></param>
         public void MoveToTop(MonoView instance)
         {
             int idx = _stack.IndexOf(instance);
@@ -215,13 +242,29 @@ namespace PurrNet.UI
             UpdateVisibility();
         }
 
-        private IEnumerator RunEnterTransition(MonoView view, IEnumerator transition)
+        /// <summary>
+        /// Moves the first instance of the specified type to the top of the stack. If no instance of that type is found, does nothing.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public void MoveToTop<T>() where T : MonoView
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                if (_stack[i] is T instance)
+                {
+                    MoveToTop(instance);
+                    return;
+                }
+            }
+        }
+
+        private static IEnumerator RunEnterTransition(MonoView view, IEnumerator transition)
         {
             yield return transition;
             if (view) view.canvasGroup.blocksRaycasts = true;
         }
 
-        private IEnumerator RunExitTransition(MonoView view, IEnumerator transition)
+        private static IEnumerator RunExitTransition(MonoView view, IEnumerator transition)
         {
             yield return transition;
             if (view) view.DestroyMe();

@@ -5,7 +5,7 @@ namespace PurrNet.UI
 {
     public static class ViewTransitions
     {
-        private const float DEFAULT_DURATION = 0.3f;
+        private const float DEFAULT_DURATION = 0.2f;
 
         public static IEnumerator Parallel(params IEnumerator[] transitions)
         {
