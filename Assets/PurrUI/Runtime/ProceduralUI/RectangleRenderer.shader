@@ -82,7 +82,8 @@ Shader "Hidden/PurrUI/RectangleRenderer"
             fixed4 _Roundness;
             float _Padding;
             float _OutlineSize;
-            float _GraphicBlur; // unused (kept to match your params)
+            fixed4 _GraphicColor;
+            float _GraphicBlur;
             fixed4 _OutlineColor;
 
             float _ShadowSize;
@@ -136,7 +137,7 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 float2 position = (uv - 0.5) * _Size;
                 float2 halfSize = _Size * 0.5;
 
-                half4 graphic = (tex2D(_MainTex, uv) + _TextureSampleAdd) * IN.color;
+                half4 graphic = (tex2D(_MainTex, uv) + _TextureSampleAdd) * _GraphicColor;
 
                 // Signed distance field calculation
                 float dist = sdRoundedBox(position, halfSize, _Roundness);
@@ -181,6 +182,9 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                 // Convert back to straight alpha for Unity's SrcAlpha blending
                 if (effects.a > 1e-5)
                     effects.rgb /= effects.a;
+
+                // Apply vertex color as final multiplier (Graphic.color)
+                effects *= IN.color;
 
                 // Unity UI clipping
                 #ifdef UNITY_UI_CLIP_RECT

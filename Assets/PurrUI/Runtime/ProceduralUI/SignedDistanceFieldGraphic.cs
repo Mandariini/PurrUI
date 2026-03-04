@@ -15,6 +15,7 @@ namespace PurrNet.UI
         static readonly int SHADOW_BLUR = Shader.PropertyToID("_ShadowBlur");
         static readonly int SHADOW_POW = Shader.PropertyToID("_ShadowPow");
         static readonly int SHADOW_COLOR = Shader.PropertyToID("_ShadowColor");
+        static readonly int GRAPHIC_COLOR = Shader.PropertyToID("_GraphicColor");
         static readonly int PADDING = Shader.PropertyToID("_Padding");
 
         const string SHADER_NAME = "Hidden/PurrUI/RectangleRenderer";
@@ -23,6 +24,7 @@ namespace PurrNet.UI
 
         [Header("Graphic")]
         [SerializeField] Texture _texture;
+        [SerializeField] Color _graphicColor = Color.white;
         [SerializeField] float _graphicBlur;
 
         [Header("Outline")]
@@ -90,6 +92,7 @@ namespace PurrNet.UI
 
             mat.SetVector(SIZE, new Vector2(width, height));
             mat.SetTexture(MAIN_TEX, mainTexture);
+            mat.SetColor(GRAPHIC_COLOR, _graphicColor);
             mat.SetFloat(GRAPHIC_BLUR, _graphicBlur);
             mat.SetFloat(OUTLINE_SIZE, _outlineSize);
             mat.SetColor(OUTLINE_COLOR, _outlineColor);
