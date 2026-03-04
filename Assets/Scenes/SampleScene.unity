@@ -329,7 +329,7 @@ MonoBehaviour:
   _shader: {fileID: 4800000, guid: 0758f85608bde4543a44ac4b9ba345e6, type: 3}
   _texture: {fileID: 0}
   _graphicColor: {r: 1, g: 1, b: 1, a: 1}
-  _gradientType: 4
+  _gradientType: 0
   _gradientColor: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
   _gradientQuality: 20
   _radialMode: 1
@@ -375,7 +375,7 @@ MonoBehaviour:
   _embossAngle: 127
   _embossStrength: 0.5
   _embossHighlightColor: {r: 1, g: 1, b: 1, a: 1}
-  _embossShadowColor: {r: 1, g: 0, b: 0, a: 1}
+  _embossShadowColor: {r: 1, g: 0.008803852, b: 0, a: 1}
   _useMaxRoundness: 1
   _uniformRoundness: 1
   _roundnessInPixels: {x: 101.3, y: 101.3, z: 101.3, w: 101.3}

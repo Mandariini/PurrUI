@@ -195,11 +195,12 @@ Shader "Hidden/PurrUI/RectangleRenderer"
                     light = sign(light) * pow(abs(light), 1.0 + (1.0 - IN.emboss.z) * 4.0);
 
                     // Band mask: emboss only near the edge, fades inward
-                    float bandMask = smoothstep(-embossSize, 0, dist) * fill;
+                    float bandMask = smoothstep(-embossSize, 0, dist);
 
                     // Lerp toward highlight or shadow tint
+                    // Use saturate(fill/delta) to mask out AA fringe — emboss only where fill is solid
                     half3 tint = light > 0 ? IN.embossHColor.rgb : IN.embossLColor.rgb;
-                    fillRgb = lerp(fillRgb, tint, abs(light) * bandMask);
+                    fillRgb = lerp(fillRgb, tint, abs(light) * bandMask * saturate(fill * 2));
                 }
 
                 // vertex.color = graphicColor * Graphic.color
