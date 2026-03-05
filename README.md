@@ -97,7 +97,7 @@ public class ProfileView : MonoView
 
 ### The `Setup` Convention
 
-We follow a convention of adding a `Setup` method to views that need initialization data. This is **not enforced** by the base class — it's simply a pattern. The idea is that `Setup` is called immediately after pushing:
+We follow a convention of adding a `Setup` method to views that need initialization data. This is **not enforced** by the base class, it's simply a pattern. The idea is that `Setup` is called immediately after pushing:
 
 ```csharp
 _stack.Push<ProfileView>().Setup("Jane", "Hello world!");
@@ -112,7 +112,7 @@ All built-in views provided by PurrUI follow this pattern. You are encouraged to
 There are two ways to push a view onto the stack:
 
 ```csharp
-// Generic push — looks up the prefab by type from the ViewCollection
+// Generic push: looks up the prefab by type from the ViewCollection
 var view = _stack.Push<DialogView>();
 
 // Direct prefab push
@@ -134,7 +134,7 @@ _stack.Pop();
 // Pop a specific view instance (regardless of position in the stack)
 _stack.Pop(viewInstance);
 
-// From inside a view — call CloseMe() (can be wired to a button in the inspector)
+// From inside a view, call CloseMe() (can be wired to a button in the inspector)
 CloseMe();
 ```
 
