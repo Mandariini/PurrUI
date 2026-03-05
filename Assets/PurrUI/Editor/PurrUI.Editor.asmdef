@@ -1,0 +1,16 @@
+{
+    "name": "PurrUI.Editor",
+    "rootNamespace": "PurrNet.Editor.UI",
+    "references": [
+        "GUID:fa956321508a2aa4da8596c3e41eb158"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

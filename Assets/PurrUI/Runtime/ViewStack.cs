@@ -1,0 +1,273 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace PurrNet.UI
+{
+    public class ViewStack : MonoBehaviour
+    {
+        [SerializeField] private Transform _parent;
+        [SerializeField] private ViewCollection _prefabs;
+        [SerializeField] private MonoView _pushOnStart;
+        [SerializeField] private int _orderOffset;
+
+        private readonly List<MonoView> _stack = new();
+
+        private void Start()
+        {
+            if (_pushOnStart)
+                Push(_pushOnStart);
+        }
+
+        private void Reset()
+        {
+            _parent = transform;
+        }
+
+        private void UpdateOrder(int fromIdx)
+        {
+            for (var i = fromIdx; i < _stack.Count; i++)
+                _stack[i].UpdateOrder(i + _orderOffset);
+        }
+
+        private bool TryGet<T>(out T prefab) where T : MonoView
+        {
+            for (var i = 0; i < _prefabs.views.Length; i++)
+            {
+                var window = _prefabs.views[i];
+                if (window is T typedWindow)
+                {
+                    prefab = typedWindow;
+                    return true;
+                }
+            }
+
+            prefab = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Adds a new window to the top of the stack using the provided prefab.
+        /// The prefab must be a child of the WindowStack GameObject or its descendants.
+        /// </summary>
+        /// <param name="prefab"></param>
+        /// <returns></returns>
+        public MonoView Push(MonoView prefab)
+        {
+            if (prefab == null)
+            {
+                Debug.LogError("[WindowStack] Provided prefab is null.", this);
+                return null;
+            }
+
+            if (_stack.Count > 0)
+            {
+                var currentTop = _stack[^1];
+                currentTop.MoveToBackground();
+            }
+
+            var idx = _stack.Count;
+            var instance = Instantiate(prefab, _parent);
+            _stack.Add(instance);
+            instance.Initialize(this);
+            instance.UpdateOrder(idx);
+            UpdateVisibility();
+
+            var transition = instance.EnterTransition();
+            if (transition != null)
+            {
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunEnterTransition(instance, transition));
+            }
+
+            return instance;
+        }
+
+        private void UpdateVisibility()
+        {
+            for (int i = _stack.Count - 1; i >= 0; i--)
+            {
+                _stack[i].canvas.enabled = true;
+                if (_stack[i].cullWindowsBehind)
+                {
+                    for (int j = i - 1; j >= 0; j--)
+                        _stack[j].canvas.enabled = false;
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a new window of the specified type to the top of the stack.
+        /// The prefab must be included in the WindowPrefabs collection.
+        /// If no prefab of that type is found, logs an error and does nothing.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T Push<T>() where T : MonoView
+        {
+            if (!TryGet<T>(out var prefab))
+            {
+                Debug.LogError($"[WindowStack] No window prefab of type `{typeof(T)}` found in WindowPrefabs.", this);
+                return null;
+            }
+
+            var idx = _stack.Count;
+
+            if (idx > 0)
+            {
+                var currentTop = _stack[idx - 1];
+                currentTop.MoveToBackground();
+            }
+
+            var instance = Instantiate(prefab, _parent);
+            _stack.Add(instance);
+            instance.Initialize(this);
+            instance.UpdateOrder(idx + _orderOffset);
+            UpdateVisibility();
+
+            var transition = instance.EnterTransition();
+            if (transition != null)
+            {
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunEnterTransition(instance, transition));
+            }
+
+            return instance;
+        }
+
+        /// <summary>
+        /// Removes the top window from the stack. If the stack is empty, does nothing.
+        /// </summary>
+        public void Pop()
+        {
+            if (_stack.Count == 0)
+            {
+                Debug.LogError("[WindowStack] No windows to pop.", this);
+                return;
+            }
+
+            var top = _stack[^1];
+            _stack.RemoveAt(_stack.Count - 1);
+
+            var transition = top.ExitTransition();
+            if (transition != null)
+            {
+                top.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(top, transition));
+            }
+            else
+            {
+                top.DestroyMe();
+            }
+
+            if (_stack.Count > 0)
+            {
+                var newTopIdx = _stack.Count - 1;
+                var newTop = _stack[newTopIdx];
+                newTop.transform.SetAsLastSibling();
+                newTop.MoveToForeground();
+                newTop.UpdateOrder(newTopIdx + _orderOffset);
+            }
+            UpdateVisibility();
+        }
+
+        /// <summary>
+        /// Removes all windows from the stack. Windows are removed in order, so exit transitions will play correctly.
+        /// </summary>
+        public void Clear()
+        {
+            while (_stack.Count > 0)
+                Pop();
+        }
+
+        /// <summary>
+        /// Removes the specified instance from the stack, regardless of its position. If the instance is not in the stack, does nothing.
+        /// </summary>
+        /// <param name="instance"></param>
+        public void Pop(MonoView instance)
+        {
+            int idx = _stack.IndexOf(instance);
+
+            if (idx == -1)
+            {
+                Debug.LogError("[WindowStack] The provided window instance is not in the stack.", this);
+                return;
+            }
+
+            // If it's the top window, use the regular Pop method
+            if (idx == _stack.Count - 1)
+            {
+                Pop();
+                return;
+            }
+
+            _stack.RemoveAt(idx);
+
+            var transition = instance.ExitTransition();
+            if (transition != null)
+            {
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(instance, transition));
+            }
+            else
+            {
+                instance.DestroyMe();
+            }
+
+            UpdateOrder(idx);
+            UpdateVisibility();
+        }
+
+        /// <summary>
+        /// Moves the specified instance to the top of the stack. If the instance is not in the stack, does nothing.
+        /// </summary>
+        /// <param name="instance"></param>
+        public void MoveToTop(MonoView instance)
+        {
+            int idx = _stack.IndexOf(instance);
+            if (idx == -1)
+            {
+                Debug.LogError("[WindowStack] The provided window instance is not in the stack.", this);
+                return;
+            }
+
+            if (idx == _stack.Count - 1)
+                return;
+
+            _stack.RemoveAt(idx);
+            _stack.Add(instance);
+            instance.transform.SetAsLastSibling();
+            UpdateOrder(idx);
+            UpdateVisibility();
+        }
+
+        /// <summary>
+        /// Moves the first instance of the specified type to the top of the stack. If no instance of that type is found, does nothing.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public void MoveToTop<T>() where T : MonoView
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                if (_stack[i] is T instance)
+                {
+                    MoveToTop(instance);
+                    return;
+                }
+            }
+        }
+
+        private static IEnumerator RunEnterTransition(MonoView view, IEnumerator transition)
+        {
+            yield return transition;
+            if (view) view.canvasGroup.blocksRaycasts = true;
+        }
+
+        private static IEnumerator RunExitTransition(MonoView view, IEnumerator transition)
+        {
+            yield return transition;
+            if (view) view.DestroyMe();
+        }
+    }
+}
