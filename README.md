@@ -7,6 +7,7 @@ A Unity UI framework by the PurrNet team featuring procedural UI rendering, view
 ## Features
 
 - **Procedural UI** - SDF-based rendering with `RectangleGraphic` and `GlowGraphic` (for glow/shadows)
+- **Material Icons** - Simple to use material icon support for textmeshpro
 - **View Management** - `ViewStack` and `ViewCollection` for managing UI views with transition support
 
 ## Installation
@@ -28,6 +29,26 @@ https://github.com/PurrNet/PurrUI.git?path=Assets/PurrUI#dev
 <img width="553" height="718" alt="image" src="https://github.com/user-attachments/assets/fcb56d3e-8791-4d87-800b-6373a0d6d4f9" />
 
 <img width="542" height="222" alt="image" src="https://github.com/user-attachments/assets/e02617f5-d104-4122-86c6-eaeb97382f1d" />
+
+# Material Icons
+
+<img width="374" height="251" alt="image" src="https://github.com/user-attachments/assets/f8417017-f4e4-4f61-852f-3edad7361264" />
+
+```
+Hello world
+<icon=reddit><icon=gamepad_circle><icon=gamepad_variant>
+<icon=gamepad_square><icon=keyboard_f1><icon=keyboard_return>
+```
+
+To use Material Icons you simply need to follow the example above `<icon=your_icon_name>` and you also need to add the `MaterialIconProcessor` component to your text.
+
+<img width="547" height="287" alt="image" src="https://github.com/user-attachments/assets/8cfb3f24-ca29-42dc-a851-c887c8bda9fd" />
+
+This `MaterialIconProcessor` allows the icons to work but it also gives you a handy little search bar to search for icons so you never get lost.
+
+<img width="544" height="337" alt="image" src="https://github.com/user-attachments/assets/6c152d58-8247-4686-949d-fb9e25bf42f4" />
+
+The `Copy` button will give you something like this directly: `<icon=account_alert>`.
 
 # View System Documentation
 
