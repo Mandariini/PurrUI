@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +8,8 @@ namespace PurrNet.UI
     public class ViewStack : MonoBehaviour
     {
         [SerializeField] private Transform _parent;
-        [SerializeField] private ViewCollection _prefabs;
+        [SerializeField, HideInInspector, Obsolete] private ViewCollection _prefabs;
+        [SerializeField] private List<ViewCollection> _prefabCollections;
         [SerializeField] private MonoView _pushOnStart;
         [SerializeField] private int _orderOffset;
 
@@ -18,6 +20,22 @@ namespace PurrNet.UI
             if (_pushOnStart)
                 Push(_pushOnStart);
         }
+
+#if UNITY_EDITOR
+#pragma warning disable CS0612 // Type or member is obsolete
+        private void OnValidate()
+        {
+            // this is entirely for backwards compatibility
+            if (_prefabs)
+            {
+                _prefabCollections ??= new List<ViewCollection>();
+                if (!_prefabCollections.Contains(_prefabs))
+                    _prefabCollections.Add(_prefabs);
+                _prefabs = null;
+            }
+        }
+#pragma warning restore CS0612 // Type or member is obsolete
+#endif
 
         private void Reset()
         {
@@ -32,13 +50,27 @@ namespace PurrNet.UI
 
         private bool TryGet<T>(out T prefab) where T : MonoView
         {
-            for (var i = 0; i < _prefabs.views.Length; i++)
+            if (_prefabCollections == null)
             {
-                var window = _prefabs.views[i];
-                if (window is T typedWindow)
+                prefab = null;
+                return false;
+            }
+
+            for (int i = 0; i < _prefabCollections.Count; i++)
+            {
+                var prefabs = _prefabCollections[i];
+
+                if (!prefabs)
+                    continue;
+
+                for (var j = 0; j < prefabs.views.Length; j++)
                 {
-                    prefab = typedWindow;
-                    return true;
+                    var window = prefabs.views[j];
+                    if (window is T typedWindow)
+                    {
+                        prefab = typedWindow;
+                        return true;
+                    }
                 }
             }
 
