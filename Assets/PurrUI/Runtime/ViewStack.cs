@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace PurrNet.UI
 {
@@ -14,6 +15,8 @@ namespace PurrNet.UI
         [SerializeField] private int _orderOffset;
 
         private readonly List<MonoView> _stack = new();
+
+        public MonoView top => _stack.Count > 0 ? _stack[^1] : null;
 
         private void Start()
         {
@@ -79,11 +82,23 @@ namespace PurrNet.UI
         }
 
         /// <summary>
+        /// Searches the stack from top to bottom for the first instance of the specified type and returns it.
+        /// If no instance of that type is found, returns null.
+        /// </summary>
+        public T FindWindow<T>() where T : MonoView
+        {
+            for (int i = _stack.Count - 1; i >= 0; i--)
+            {
+                if (_stack[i] is T instance)
+                    return instance;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Adds a new window to the top of the stack using the provided prefab.
         /// The prefab must be a child of the WindowStack GameObject or its descendants.
         /// </summary>
-        /// <param name="prefab"></param>
-        /// <returns></returns>
         public MonoView Push(MonoView prefab)
         {
             if (prefab == null)

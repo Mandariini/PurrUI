@@ -16,6 +16,8 @@ namespace PurrNet.UI
 
         public bool cullWindowsBehind => _cullWindowsBehind;
 
+        public bool isTopMost => parentStack && parentStack.top == this;
+
         public Canvas canvas { get; private set; }
 
         public void Initialize(ViewStack parentStack)
