@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/PurrNet/PurrUI/compare/v1.1.0...v1.2.0) (2026-03-08)
+
+
+### Features
+
+* implement AudioSession and Sounds2D classes for easy audio management (very lite and simple) ([d175685](https://github.com/PurrNet/PurrUI/commit/d175685bece62097b000619f0af549545d13be90))
+
 # [1.2.0-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.1.0...v1.2.0-beta.1) (2026-03-08)
 
 
