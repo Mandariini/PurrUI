@@ -4,11 +4,14 @@ A Unity UI framework by the PurrNet team featuring procedural UI rendering, view
 
 <img width="1034" height="491" alt="image" src="https://github.com/user-attachments/assets/d3abc18b-0a5f-4752-9092-c6c233bfbf2d" />
 
+<img width="680" height="363" alt="image" src="https://github.com/user-attachments/assets/e75fbd28-3cd4-4579-b39f-be524e8d0c22" />
+
 ## Features
 
 - **Procedural UI** - SDF-based rendering with `RectangleGraphic` and `GlowGraphic` (for glow/shadows)
 - **Material Icons** - Simple to use material icon support for textmeshpro
 - **View Management** - `ViewStack` and `ViewCollection` for managing UI views with transition support
+- **Sounds2D** - Lightweight 2D audio system with a fluent API for fire-and-forget sound effects
 
 ## Installation
 
@@ -246,3 +249,50 @@ protected override IEnumerator OnExitTransition()
 - **Raycasts**: Only the top view receives raycasts. Views below the top have raycasts disabled.
 - **Cull Windows Behind**: If a view has `cullWindowsBehind` enabled, all views below it in the stack have their `Canvas` disabled entirely. Useful for fullscreen views where nothing behind them is visible.
 - **OnBecomeForeground**: Override this virtual method in your `MonoView` subclass to react when the view returns to the top of the stack (e.g., after the view above it is popped).
+
+# Sounds2D
+
+A lightweight, fire-and-forget 2D audio system. It manages a small pool of `AudioSource` components (up to 5) on a `DontDestroyOnLoad` GameObject, so you never have to wire up audio sources yourself.
+
+## Quick Start
+
+```csharp
+using PurrNet.UI;
+using UnityEngine;
+
+public class ButtonSFX : MonoBehaviour
+{
+    [SerializeField] private AudioClip _clickSound;
+
+    public void OnClick()
+    {
+        Sounds2D.Play(new AudioSession(_clickSound));
+    }
+}
+```
+
+## AudioSession
+
+`AudioSession` is a struct that describes *what* to play and *how*. It uses a fluent builder API:
+
+```csharp
+// Simple: play a clip at default volume and pitch
+Sounds2D.Play(new AudioSession(clip));
+
+// With volume and pitch
+Sounds2D.Play(new AudioSession(clip).WithVolume(0.8f).WithPitch(1.2f));
+
+// Random variation: adds ± randomRange to the base value each time
+Sounds2D.Play(new AudioSession(clip).WithVolume(0.7f, 0.1f).WithPitch(1f, 0.15f));
+
+// Random clip from an array (great for footsteps, impacts, etc.)
+AudioClip[] hitSounds = { hit1, hit2, hit3 };
+Sounds2D.Play(new AudioSession(hitSounds).WithVolume(0.9f));
+```
+
+## Master Volume
+
+```csharp
+// Set a global master volume (0-1) that scales all sounds
+Sounds2D.masterVolume = 0.5f;
+```
