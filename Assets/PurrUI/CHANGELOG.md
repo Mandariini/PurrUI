@@ -1,3 +1,10 @@
+# [1.3.0-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.2.0...v1.3.0-beta.1) (2026-03-08)
+
+
+### Features
+
+* add isTopMost property and top method to MonoView and ViewStack for improved stack management ([add8d8f](https://github.com/PurrNet/PurrUI/commit/add8d8f99cbe85c0bac188f70df9290ef86b18dd))
+
 # [1.2.0](https://github.com/PurrNet/PurrUI/compare/v1.1.0...v1.2.0) (2026-03-08)
 
 
