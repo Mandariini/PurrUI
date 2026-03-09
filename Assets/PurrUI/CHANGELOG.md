@@ -1,3 +1,10 @@
+# [1.3.0-beta.4](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.3...v1.3.0-beta.4) (2026-03-09)
+
+
+### Features
+
+* add OnPushed and OnPopped methods with transition handling for MonoView ([f7f1012](https://github.com/PurrNet/PurrUI/commit/f7f1012ce3ed107ed652f3fdf5beaef6d9d20f36))
+
 # [1.3.0-beta.3](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.2...v1.3.0-beta.3) (2026-03-09)
 
 
