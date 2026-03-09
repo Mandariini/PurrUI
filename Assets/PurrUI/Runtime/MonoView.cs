@@ -20,6 +20,11 @@ namespace PurrNet.UI
 
         public Canvas canvas { get; private set; }
 
+        public virtual void OnPushed() { }
+
+        public virtual void OnPopped() { }
+
+
         public void Initialize(ViewStack parentStack)
         {
             this.parentStack = parentStack;

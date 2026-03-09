@@ -119,6 +119,7 @@ namespace PurrNet.UI
             _stack.Add(instance);
             instance.Initialize(this);
             instance.UpdateOrder(idx + _orderOffset);
+            instance.OnPushed();
 
             var transition = instance.EnterTransition();
             if (transition != null)
@@ -254,6 +255,7 @@ namespace PurrNet.UI
             _stack.Add(instance);
             instance.Initialize(this);
             instance.UpdateOrder(idx + _orderOffset);
+            instance.OnPushed();
 
             var transition = instance.EnterTransition();
             if (transition != null)
@@ -284,6 +286,7 @@ namespace PurrNet.UI
 
             var topView = _stack[^1];
             _stack.RemoveAt(_stack.Count - 1);
+            topView.OnPopped();
 
             var transition = topView.ExitTransition();
             if (transition != null)
@@ -339,6 +342,7 @@ namespace PurrNet.UI
             }
 
             _stack.RemoveAt(idx);
+            instance.OnPopped();
 
             var transition = instance.ExitTransition();
             if (transition != null)
