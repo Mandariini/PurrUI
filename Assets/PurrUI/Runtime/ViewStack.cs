@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace PurrNet.UI
 {
@@ -194,18 +193,18 @@ namespace PurrNet.UI
                 return;
             }
 
-            var top = _stack[^1];
+            var topView = _stack[^1];
             _stack.RemoveAt(_stack.Count - 1);
 
-            var transition = top.ExitTransition();
+            var transition = topView.ExitTransition();
             if (transition != null)
             {
-                top.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunExitTransition(top, transition));
+                topView.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(topView, transition));
             }
             else
             {
-                top.DestroyMe();
+                topView.DestroyMe();
             }
 
             if (_stack.Count > 0)
