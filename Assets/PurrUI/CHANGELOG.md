@@ -1,3 +1,17 @@
+# [1.3.0-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.1...v1.3.0-beta.2) (2026-03-09)
+
+
+### Bug Fixes
+
+* clear selected GameObject when moving MonoView to background ([b154b3c](https://github.com/PurrNet/PurrUI/commit/b154b3cf6cce3552a4f8a4ad9fff5ecb7ae4011d))
+* update MoveToBackground and MoveToForeground methods for improved interaction handling ([1644bd1](https://github.com/PurrNet/PurrUI/commit/1644bd160bdd831d35fdb86caa28f9bfe774e619))
+* ViewTransitions, just assume midle of screen ([e83da40](https://github.com/PurrNet/PurrUI/commit/e83da40cc9db22bdc1019f49d0d78a0425111271))
+
+
+### Features
+
+* add culling and unculling transitions for MonoView management ([604b51d](https://github.com/PurrNet/PurrUI/commit/604b51df071c6f6e7db68682a6a5f697e251ca25))
+
 # [1.3.0-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.2.0...v1.3.0-beta.1) (2026-03-08)
 
 
