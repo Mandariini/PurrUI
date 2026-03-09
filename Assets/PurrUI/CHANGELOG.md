@@ -1,3 +1,10 @@
+# [1.3.0-beta.3](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.2...v1.3.0-beta.3) (2026-03-09)
+
+
+### Features
+
+* add OnPushed and OnPopped methods for view stack management ([6181569](https://github.com/PurrNet/PurrUI/commit/6181569f622ce8cb3537399e8dcc6e1f588f8280))
+
 # [1.3.0-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.1...v1.3.0-beta.2) (2026-03-09)
 
 
