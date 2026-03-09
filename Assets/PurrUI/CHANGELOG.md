@@ -1,3 +1,10 @@
+# [1.3.0-beta.5](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.4...v1.3.0-beta.5) (2026-03-09)
+
+
+### Features
+
+* refactor view stack management with Replace and AddToStack methods ([fd06b8f](https://github.com/PurrNet/PurrUI/commit/fd06b8ff6541682ae08f2dbd729264927a6a522c))
+
 # [1.3.0-beta.4](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.3...v1.3.0-beta.4) (2026-03-09)
 
 
