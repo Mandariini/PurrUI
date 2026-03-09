@@ -109,32 +109,9 @@ namespace PurrNet.UI
             }
 
             if (_stack.Count > 0)
-            {
-                var currentTop = _stack[^1];
-                currentTop.MoveToBackground();
-            }
+                _stack[^1].MoveToBackground();
 
-            var idx = _stack.Count;
-            var instance = Instantiate(prefab, _parent);
-            _stack.Add(instance);
-            instance.Initialize(this);
-            instance.UpdateOrder(idx + _orderOffset);
-            instance.OnPushed();
-
-            var transition = instance.EnterTransition();
-            if (transition != null)
-            {
-                instance.canvasGroup.interactable = false;
-                instance.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunEnterTransition(instance, transition));
-                ApplyCulling(false);
-            }
-            else
-            {
-                ApplyCulling(true);
-            }
-
-            return instance;
+            return AddToStack(prefab);
         }
 
         private void UpdateVisibility()
@@ -233,8 +210,6 @@ namespace PurrNet.UI
         /// The prefab must be included in the WindowPrefabs collection.
         /// If no prefab of that type is found, logs an error and does nothing.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public T Push<T>() where T : MonoView
         {
             if (!TryGet<T>(out var prefab))
@@ -243,34 +218,7 @@ namespace PurrNet.UI
                 return null;
             }
 
-            var idx = _stack.Count;
-
-            if (idx > 0)
-            {
-                var currentTop = _stack[idx - 1];
-                currentTop.MoveToBackground();
-            }
-
-            var instance = Instantiate(prefab, _parent);
-            _stack.Add(instance);
-            instance.Initialize(this);
-            instance.UpdateOrder(idx + _orderOffset);
-            instance.OnPushed();
-
-            var transition = instance.EnterTransition();
-            if (transition != null)
-            {
-                instance.canvasGroup.interactable = false;
-                instance.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunEnterTransition(instance, transition));
-                ApplyCulling(false);
-            }
-            else
-            {
-                ApplyCulling(true);
-            }
-
-            return instance;
+            return (T)Push(prefab);
         }
 
         /// <summary>
@@ -284,21 +232,7 @@ namespace PurrNet.UI
                 return;
             }
 
-            var topView = _stack[^1];
-            _stack.RemoveAt(_stack.Count - 1);
-            topView.OnPopped();
-
-            var transition = topView.ExitTransition();
-            if (transition != null)
-            {
-                topView.canvasGroup.interactable = false;
-                topView.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunExitTransition(topView, transition));
-            }
-            else
-            {
-                topView.DestroyMe();
-            }
+            RemoveTop();
 
             if (_stack.Count > 0)
             {
@@ -360,6 +294,41 @@ namespace PurrNet.UI
         }
 
         /// <summary>
+        /// Replaces the top window with a new window instantiated from the provided prefab.
+        /// The old top plays its exit transition while the new one plays its enter transition.
+        /// Views below are not affected (no unnecessary uncull/re-cull).
+        /// </summary>
+        public MonoView Replace(MonoView prefab)
+        {
+            if (prefab == null)
+            {
+                Debug.LogError("[WindowStack] Provided prefab is null.", this);
+                return null;
+            }
+
+            if (_stack.Count > 0)
+                RemoveTop();
+
+            return AddToStack(prefab);
+        }
+
+        /// <summary>
+        /// Replaces the top window with a new window of the specified type.
+        /// The old top plays its exit transition while the new one plays its enter transition.
+        /// Views below are not affected (no unnecessary uncull/re-cull).
+        /// </summary>
+        public T Replace<T>() where T : MonoView
+        {
+            if (!TryGet<T>(out var prefab))
+            {
+                Debug.LogError($"[WindowStack] No window prefab of type `{typeof(T)}` found in WindowPrefabs.", this);
+                return null;
+            }
+
+            return (T)Replace(prefab);
+        }
+
+        /// <summary>
         /// Moves the specified instance to the top of the stack. If the instance is not in the stack, does nothing.
         /// </summary>
         /// <param name="instance"></param>
@@ -396,6 +365,50 @@ namespace PurrNet.UI
                     return;
                 }
             }
+        }
+
+        private void RemoveTop()
+        {
+            var topView = _stack[^1];
+            _stack.RemoveAt(_stack.Count - 1);
+            topView.OnPopped();
+
+            var transition = topView.ExitTransition();
+            if (transition != null)
+            {
+                topView.canvasGroup.interactable = false;
+                topView.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(topView, transition));
+            }
+            else
+            {
+                topView.DestroyMe();
+            }
+        }
+
+        private MonoView AddToStack(MonoView prefab)
+        {
+            var idx = _stack.Count;
+            var instance = Instantiate(prefab, _parent);
+            _stack.Add(instance);
+            instance.Initialize(this);
+            instance.UpdateOrder(idx + _orderOffset);
+            instance.OnPushed();
+
+            var transition = instance.EnterTransition();
+            if (transition != null)
+            {
+                instance.canvasGroup.interactable = false;
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunEnterTransition(instance, transition));
+                ApplyCulling(false);
+            }
+            else
+            {
+                ApplyCulling(true);
+            }
+
+            return instance;
         }
 
         private IEnumerator RunEnterTransition(MonoView view, IEnumerator transition)
