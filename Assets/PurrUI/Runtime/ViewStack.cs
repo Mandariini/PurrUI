@@ -14,6 +14,8 @@ namespace PurrNet.UI
         [SerializeField] private int _orderOffset;
 
         private readonly List<MonoView> _stack = new();
+        private readonly Dictionary<MonoView, Coroutine> _cullCoroutines = new();
+        private readonly Dictionary<MonoView, Coroutine> _uncullCoroutines = new();
 
         public MonoView top => _stack.Count > 0 ? _stack[^1] : null;
 
@@ -116,14 +118,19 @@ namespace PurrNet.UI
             var instance = Instantiate(prefab, _parent);
             _stack.Add(instance);
             instance.Initialize(this);
-            instance.UpdateOrder(idx);
-            UpdateVisibility();
+            instance.UpdateOrder(idx + _orderOffset);
 
             var transition = instance.EnterTransition();
             if (transition != null)
             {
+                instance.canvasGroup.interactable = false;
                 instance.canvasGroup.blocksRaycasts = false;
                 StartCoroutine(RunEnterTransition(instance, transition));
+                ApplyCulling(false);
+            }
+            else
+            {
+                ApplyCulling(true);
             }
 
             return instance;
@@ -133,14 +140,91 @@ namespace PurrNet.UI
         {
             for (int i = _stack.Count - 1; i >= 0; i--)
             {
-                _stack[i].canvas.enabled = true;
-                if (_stack[i].cullWindowsBehind)
+                var view = _stack[i];
+
+                bool wasCulled = !view.canvas.enabled;
+
+                if (_cullCoroutines.TryGetValue(view, out var cullCoroutine))
+                {
+                    StopCoroutine(cullCoroutine);
+                    _cullCoroutines.Remove(view);
+                    wasCulled = true;
+                }
+
+                if (wasCulled)
+                {
+                    view.canvas.enabled = true;
+
+                    var enterTransition = view.UnculledTransition();
+                    if (enterTransition != null)
+                    {
+                        var coroutine = StartCoroutine(RunUncullTransition(view, enterTransition));
+                        _uncullCoroutines[view] = coroutine;
+                    }
+                }
+
+                if (view.cullWindowsBehind)
                 {
                     for (int j = i - 1; j >= 0; j--)
+                    {
+                        StopUncullTransition(_stack[j]);
                         _stack[j].canvas.enabled = false;
+                    }
                     break;
                 }
             }
+        }
+
+        private void StopUncullTransition(MonoView view)
+        {
+            if (_uncullCoroutines.TryGetValue(view, out var coroutine))
+            {
+                StopCoroutine(coroutine);
+                _uncullCoroutines.Remove(view);
+            }
+        }
+
+        private void ApplyCulling(bool instant)
+        {
+            for (int i = _stack.Count - 1; i >= 0; i--)
+            {
+                if (_stack[i].cullWindowsBehind)
+                {
+                    for (int j = i - 1; j >= 0; j--)
+                    {
+                        var view = _stack[j];
+
+                        if (!view.canvas.enabled || _cullCoroutines.ContainsKey(view))
+                            continue;
+
+                        StopUncullTransition(view);
+
+                        var transition = view.CulledTransition();
+                        if (transition != null)
+                        {
+                            _cullCoroutines[view] = StartCoroutine(RunCullTransition(view, transition));
+                            continue;
+                        }
+
+                        if (instant)
+                            view.canvas.enabled = false;
+                    }
+                    break;
+                }
+            }
+        }
+
+        private IEnumerator RunCullTransition(MonoView view, IEnumerator transition)
+        {
+            yield return transition;
+            _cullCoroutines.Remove(view);
+            if (view) view.canvas.enabled = false;
+        }
+
+        private IEnumerator RunUncullTransition(MonoView view, IEnumerator transition)
+        {
+            yield return transition;
+            _uncullCoroutines.Remove(view);
         }
 
         /// <summary>
@@ -170,13 +254,18 @@ namespace PurrNet.UI
             _stack.Add(instance);
             instance.Initialize(this);
             instance.UpdateOrder(idx + _orderOffset);
-            UpdateVisibility();
 
             var transition = instance.EnterTransition();
             if (transition != null)
             {
+                instance.canvasGroup.interactable = false;
                 instance.canvasGroup.blocksRaycasts = false;
                 StartCoroutine(RunEnterTransition(instance, transition));
+                ApplyCulling(false);
+            }
+            else
+            {
+                ApplyCulling(true);
             }
 
             return instance;
@@ -199,6 +288,7 @@ namespace PurrNet.UI
             var transition = topView.ExitTransition();
             if (transition != null)
             {
+                topView.canvasGroup.interactable = false;
                 topView.canvasGroup.blocksRaycasts = false;
                 StartCoroutine(RunExitTransition(topView, transition));
             }
@@ -304,10 +394,15 @@ namespace PurrNet.UI
             }
         }
 
-        private static IEnumerator RunEnterTransition(MonoView view, IEnumerator transition)
+        private IEnumerator RunEnterTransition(MonoView view, IEnumerator transition)
         {
             yield return transition;
-            if (view) view.canvasGroup.blocksRaycasts = true;
+            if (view)
+            {
+                view.canvasGroup.interactable = true;
+                view.canvasGroup.blocksRaycasts = true;
+            }
+            ApplyCulling(true);
         }
 
         private static IEnumerator RunExitTransition(MonoView view, IEnumerator transition)

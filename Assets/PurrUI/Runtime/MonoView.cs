@@ -54,6 +54,13 @@ namespace PurrNet.UI
         protected virtual IEnumerator OnEnterTransition() => null;
         protected virtual IEnumerator OnExitTransition() => null;
 
+        public IEnumerator CulledTransition() => OnCulledTransition();
+
+        public IEnumerator UnculledTransition() => OnUnculledTransition();
+
+        protected virtual IEnumerator OnCulledTransition() => null;
+        protected virtual IEnumerator OnUnculledTransition() => null;
+
         internal void DestroyMe()
         {
             Destroy(gameObject);
