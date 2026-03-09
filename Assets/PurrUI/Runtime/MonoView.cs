@@ -36,6 +36,7 @@ namespace PurrNet.UI
         {
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
+            OnBecomeBackground();
         }
 
         public void MoveToForeground()
@@ -46,6 +47,8 @@ namespace PurrNet.UI
         }
 
         protected virtual void OnBecomeForeground() { }
+
+        protected virtual void OnBecomeBackground() { }
 
         public IEnumerator EnterTransition() => OnEnterTransition();
 
