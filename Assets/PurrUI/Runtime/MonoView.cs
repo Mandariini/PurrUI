@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace PurrNet.UI
 {
@@ -34,6 +35,12 @@ namespace PurrNet.UI
 
         public void MoveToBackground()
         {
+            var ev = EventSystem.current;
+            if (ev && ev.currentSelectedGameObject)
+            {
+                if (ev.currentSelectedGameObject.transform.IsChildOf(transform))
+                    ev.SetSelectedGameObject(null);
+            }
             canvasGroup.blocksRaycasts = false;
         }
 
