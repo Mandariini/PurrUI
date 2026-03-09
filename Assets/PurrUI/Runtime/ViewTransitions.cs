@@ -57,51 +57,27 @@ namespace PurrNet.UI
             => Fade(view.canvasGroup, 1f, 0f, duration);
 
         public static IEnumerator SlideFromLeft(RectTransform content, float duration = DEFAULT_DURATION)
-        {
-            var target = content.anchoredPosition;
-            return Slide(content, target + Vector2.left * content.rect.width, target, duration);
-        }
+            => Slide(content, Vector2.left * content.rect.width, Vector2.zero, duration);
 
         public static IEnumerator SlideToLeft(RectTransform content, float duration = DEFAULT_DURATION)
-        {
-            var from = content.anchoredPosition;
-            return Slide(content, from, from + Vector2.left * content.rect.width, duration);
-        }
+            => Slide(content, Vector2.zero, Vector2.left * content.rect.width, duration);
 
         public static IEnumerator SlideFromRight(RectTransform content, float duration = DEFAULT_DURATION)
-        {
-            var target = content.anchoredPosition;
-            return Slide(content, target + Vector2.right * content.rect.width, target, duration);
-        }
+            => Slide(content, Vector2.right * content.rect.width, Vector2.zero, duration);
 
         public static IEnumerator SlideToRight(RectTransform content, float duration = DEFAULT_DURATION)
-        {
-            var from = content.anchoredPosition;
-            return Slide(content, from, from + Vector2.right * content.rect.width, duration);
-        }
+            => Slide(content, Vector2.zero, Vector2.right * content.rect.width, duration);
 
         public static IEnumerator SlideFromBottom(RectTransform content, float duration = DEFAULT_DURATION)
-        {
-            var target = content.anchoredPosition;
-            return Slide(content, target + Vector2.down * content.rect.height, target, duration);
-        }
+            => Slide(content, Vector2.down * content.rect.height, Vector2.zero, duration);
 
         public static IEnumerator SlideToBottom(RectTransform content, float duration = DEFAULT_DURATION)
-        {
-            var from = content.anchoredPosition;
-            return Slide(content, from, from + Vector2.down * content.rect.height, duration);
-        }
+            => Slide(content, Vector2.zero, Vector2.down * content.rect.height, duration);
 
         public static IEnumerator SlideFromTop(RectTransform content, float duration = DEFAULT_DURATION)
-        {
-            var target = content.anchoredPosition;
-            return Slide(content, target + Vector2.up * content.rect.height, target, duration);
-        }
+            => Slide(content, Vector2.up * content.rect.height, Vector2.zero, duration);
 
         public static IEnumerator SlideToTop(RectTransform content, float duration = DEFAULT_DURATION)
-        {
-            var from = content.anchoredPosition;
-            return Slide(content, from, from + Vector2.up * content.rect.height, duration);
-        }
+            => Slide(content, Vector2.zero, Vector2.up * content.rect.height, duration);
     }
 }
