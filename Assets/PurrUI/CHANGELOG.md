@@ -1,3 +1,10 @@
+# [1.3.0-beta.7](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.6...v1.3.0-beta.7) (2026-03-11)
+
+
+### Bug Fixes
+
+* ensure additional canvas channels are initialized in SignedDistanceFieldGraphic ([205e5b6](https://github.com/PurrNet/PurrUI/commit/205e5b6a20ebbd2f1c320515706c879179f09111))
+
 # [1.3.0-beta.6](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.5...v1.3.0-beta.6) (2026-03-10)
 
 
