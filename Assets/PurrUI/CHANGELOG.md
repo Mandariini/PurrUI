@@ -1,3 +1,10 @@
+# [1.3.0-beta.6](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.5...v1.3.0-beta.6) (2026-03-10)
+
+
+### Bug Fixes
+
+* correct order of roundness fields in Glow and Rectangle graphic editors ([ca20640](https://github.com/PurrNet/PurrUI/commit/ca206408f11015eea6b80733ab223c37cbd8e8e3))
+
 # [1.3.0-beta.5](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.4...v1.3.0-beta.5) (2026-03-09)
 
 
