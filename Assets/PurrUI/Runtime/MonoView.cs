@@ -16,7 +16,19 @@ namespace PurrNet.UI
 
         public bool cullWindowsBehind => _cullWindowsBehind;
 
+        public bool isTopMost => parentStack && parentStack.top == this;
+
         public Canvas canvas { get; private set; }
+
+        /// <summary>
+        /// Called when this view is pushed onto a ViewStack, before any enter transition plays.
+        /// </summary>
+        public virtual void OnPushed() { }
+
+        /// <summary>
+        /// Called when this view is popped from a ViewStack, before any exit transition plays.
+        /// </summary>
+        public virtual void OnPopped() { }
 
         public void Initialize(ViewStack parentStack)
         {
@@ -32,29 +44,73 @@ namespace PurrNet.UI
 
         public void MoveToBackground()
         {
+            canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
+            OnBecomeBackground();
         }
 
         public void MoveToForeground()
         {
+            canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
             OnBecomeForeground();
         }
 
+        /// <summary>
+        /// Called when this view becomes the top-most interactive view in the stack.
+        /// </summary>
         protected virtual void OnBecomeForeground() { }
+
+        /// <summary>
+        /// Called when this view is no longer the top-most view due to another view being pushed on top.
+        /// </summary>
+        protected virtual void OnBecomeBackground() { }
 
         public IEnumerator EnterTransition() => OnEnterTransition();
 
         public IEnumerator ExitTransition() => OnExitTransition();
 
+        /// <summary>
+        /// Override to provide a transition animation when this view is pushed onto the stack.
+        /// </summary>
         protected virtual IEnumerator OnEnterTransition() => null;
+
+        /// <summary>
+        /// Override to provide a transition animation when this view is popped from the stack.
+        /// </summary>
         protected virtual IEnumerator OnExitTransition() => null;
+
+        public IEnumerator CulledTransition() => OnCulledTransition();
+
+        public IEnumerator UnculledTransition() => OnUnculledTransition();
+
+        /// <summary>
+        /// Override to provide a transition animation when this view is culled by a view above it.
+        /// </summary>
+        protected virtual IEnumerator OnCulledTransition() => null;
+
+        /// <summary>
+        /// Override to provide a transition animation when this view is restored after being culled.
+        /// </summary>
+        protected virtual IEnumerator OnUnculledTransition() => null;
 
         internal void DestroyMe()
         {
             Destroy(gameObject);
         }
 
+        /// <summary>
+        /// Pops this view from its parent stack. Can be used as a UnityEvent callback.
+        /// </summary>
+        [UsedImplicitly]
+        public void PopMe()
+        {
+            parentStack.Pop(this);
+        }
+
+        /// <summary>
+        /// Pops this view from its parent stack. Can be used as a UnityEvent callback.
+        /// </summary>
         [UsedImplicitly]
         public void CloseMe()
         {

@@ -245,6 +245,7 @@ namespace PurrNet.UI
         {
             if (!_shader)
                 _shader = Shader.Find(SHADER_NAME);
+            EnsureAdditionalCanvasChannels();
             base.OnValidate();
         }
 #endif

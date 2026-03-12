@@ -140,9 +140,9 @@ namespace PurrNet.Editor.UI
                 else
                 {
                     var v = _roundnessInPixels.vector4Value;
-                    v.x = EditorGUILayout.FloatField("Top Left", v.x);
-                    v.y = EditorGUILayout.FloatField("Top Right", v.y);
-                    v.z = EditorGUILayout.FloatField("Bottom Right", v.z);
+                    v.z = EditorGUILayout.FloatField("Top Left", v.z);
+                    v.x = EditorGUILayout.FloatField("Top Right", v.x);
+                    v.y = EditorGUILayout.FloatField("Bottom Right", v.y);
                     v.w = EditorGUILayout.FloatField("Bottom Left", v.w);
                     _roundnessInPixels.vector4Value = v;
                 }

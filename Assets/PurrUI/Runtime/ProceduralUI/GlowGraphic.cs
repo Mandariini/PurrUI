@@ -3,6 +3,11 @@ using UnityEngine.UI;
 
 namespace PurrNet.UI
 {
+#if UNITY_6000_0_OR_NEWER
+    [AddComponentMenu("UI (Canvas)/PurrUI/Glow Graphic")]
+#else
+    [AddComponentMenu("UI/PurrUI/Glow Graphic")]
+#endif
     public class GlowGraphic : SignedDistanceFieldGraphic
     {
         const string GLOW_SHADER_NAME = "Hidden/PurrUI/GlowRenderer";
