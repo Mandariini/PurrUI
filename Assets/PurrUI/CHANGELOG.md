@@ -1,3 +1,10 @@
+# [1.3.0-beta.8](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.7...v1.3.0-beta.8) (2026-03-12)
+
+
+### Bug Fixes
+
+* add component and create menu item ([dab3c79](https://github.com/PurrNet/PurrUI/commit/dab3c79121a2e75e0a8907cd2e525be7ab5b3ec1))
+
 # [1.3.0-beta.7](https://github.com/PurrNet/PurrUI/compare/v1.3.0-beta.6...v1.3.0-beta.7) (2026-03-11)
 
 
