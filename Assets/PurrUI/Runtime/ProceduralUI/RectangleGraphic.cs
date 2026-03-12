@@ -2,6 +2,11 @@ using UnityEngine;
 
 namespace PurrNet.UI
 {
+#if UNITY_6000_0_OR_NEWER
+    [AddComponentMenu("UI (Canvas)/PurrUI/Rectangle Graphic")]
+#else
+    [AddComponentMenu("UI/PurrUI/Rectangle Graphic")]
+#endif
     public class RectangleGraphic : SignedDistanceFieldGraphic
     {
         [SerializeField] bool _useMaxRoundness;

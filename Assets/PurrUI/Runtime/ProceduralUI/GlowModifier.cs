@@ -3,6 +3,11 @@ using UnityEngine;
 namespace PurrNet.UI
 {
     [ExecuteAlways]
+#if UNITY_6000_0_OR_NEWER
+    [AddComponentMenu("UI (Canvas)/PurrUI/Glow Modifier")]
+#else
+    [AddComponentMenu("UI/PurrUI/Glow Modifier")]
+#endif
     public class GlowModifier : MonoBehaviour
     {
         [SerializeField, HideInInspector] GlowGraphic _glowGraphic;
