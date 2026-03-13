@@ -102,6 +102,9 @@ namespace PurrNet.UI
         /// </summary>
         public MonoView Push(MonoView prefab)
         {
+            if (!Application.isPlaying)
+                return null;
+
             if (prefab == null)
             {
                 Debug.LogError("[WindowStack] Provided prefab is null.", this);
@@ -226,6 +229,9 @@ namespace PurrNet.UI
         /// </summary>
         public void Pop()
         {
+            if (!Application.isPlaying)
+                return;
+
             if (_stack.Count == 0)
             {
                 Debug.LogError("[WindowStack] No windows to pop.", this);
@@ -260,6 +266,9 @@ namespace PurrNet.UI
         /// <param name="instance"></param>
         public void Pop(MonoView instance)
         {
+            if (!Application.isPlaying)
+                return;
+
             int idx = _stack.IndexOf(instance);
 
             if (idx == -1)
@@ -300,6 +309,9 @@ namespace PurrNet.UI
         /// </summary>
         public MonoView Replace(MonoView prefab)
         {
+            if (!Application.isPlaying)
+                return null;
+
             if (prefab == null)
             {
                 Debug.LogError("[WindowStack] Provided prefab is null.", this);
