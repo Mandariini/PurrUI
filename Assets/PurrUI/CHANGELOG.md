@@ -1,3 +1,10 @@
+# [1.4.0-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.3.1-beta.3...v1.4.0-beta.1) (2026-03-18)
+
+
+### Features
+
+* ReplaceOrPush ([71e09f6](https://github.com/PurrNet/PurrUI/commit/71e09f6dd7729fd10ed1ad55cffd01d39fd8dba0))
+
 ## [1.3.1-beta.3](https://github.com/PurrNet/PurrUI/compare/v1.3.1-beta.2...v1.3.1-beta.3) (2026-03-18)
 
 
