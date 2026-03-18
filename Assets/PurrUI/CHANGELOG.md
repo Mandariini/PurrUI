@@ -1,3 +1,10 @@
+## [1.3.1-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.3.0...v1.3.1-beta.1) (2026-03-13)
+
+
+### Bug Fixes
+
+* dont push/pop/replace outside of play mode, just a guardrail for users ([558d71a](https://github.com/PurrNet/PurrUI/commit/558d71a8f2b30411b1c5a06fd149305a2a02d98c))
+
 # [1.3.0](https://github.com/PurrNet/PurrUI/compare/v1.2.0...v1.3.0) (2026-03-12)
 
 
