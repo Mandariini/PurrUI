@@ -12,11 +12,16 @@ namespace PurrNet.UI
 
         public CanvasGroup canvasGroup { get; private set; }
 
-        public ViewStack parentStack { get; private set; }
+        public ViewStack parentStack { get; internal set; }
 
         public bool cullWindowsBehind => _cullWindowsBehind;
 
         public bool isTopMost => parentStack && parentStack.top == this;
+
+        /// <summary>
+        /// Returns true if this view is currently part of a ViewStack.
+        /// </summary>
+        public bool isInStack => parentStack;
 
         public Canvas canvas { get; private set; }
 

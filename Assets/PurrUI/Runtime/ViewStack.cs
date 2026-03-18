@@ -286,6 +286,7 @@ namespace PurrNet.UI
 
             _stack.RemoveAt(idx);
             instance.OnPopped();
+            instance.parentStack = null;
 
             var transition = instance.ExitTransition();
             if (transition != null)
@@ -384,6 +385,7 @@ namespace PurrNet.UI
             var topView = _stack[^1];
             _stack.RemoveAt(_stack.Count - 1);
             topView.OnPopped();
+            topView.parentStack = null;
 
             var transition = topView.ExitTransition();
             if (transition != null)
