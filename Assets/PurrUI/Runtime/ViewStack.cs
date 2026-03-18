@@ -342,6 +342,70 @@ namespace PurrNet.UI
         }
 
         /// <summary>
+        /// Replaces the specified instance in the stack with a new window instantiated from the provided prefab.
+        /// The old instance plays its exit transition while the new one plays its enter transition.
+        /// The new window takes the same position in the stack as the old one.
+        /// </summary>
+        public MonoView Replace(MonoView instance, MonoView prefab)
+        {
+            if (!Application.isPlaying)
+                return null;
+
+            if (prefab == null)
+            {
+                Debug.LogError("[WindowStack] Provided prefab is null.", this);
+                return null;
+            }
+
+            int idx = _stack.IndexOf(instance);
+
+            if (idx == -1)
+            {
+                Debug.LogError("[WindowStack] The provided window instance is not in the stack.", this);
+                return null;
+            }
+
+            // If it's the top window, use the regular Replace method
+            if (idx == _stack.Count - 1)
+                return Replace(prefab);
+
+            // Remove the instance at its position
+            _stack.RemoveAt(idx);
+            instance.OnPopped();
+            instance.parentStack = null;
+
+            var exitTransition = instance.ExitTransition();
+            if (exitTransition != null)
+            {
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(instance, exitTransition));
+            }
+            else
+            {
+                instance.DestroyMe();
+            }
+
+            // Insert new instance at the same position
+            return InsertIntoStack(prefab, idx);
+        }
+
+        /// <summary>
+        /// Replaces the specified instance in the stack with a new window of the specified type.
+        /// The old instance plays its exit transition while the new one plays its enter transition.
+        /// The new window takes the same position in the stack as the old one.
+        /// </summary>
+        public T Replace<T>(MonoView instance) where T : MonoView
+        {
+            if (!TryGet<T>(out var prefab))
+            {
+                Debug.LogError($"[WindowStack] No window prefab of type `{typeof(T)}` found in WindowPrefabs.", this);
+                return null;
+            }
+
+            return (T)Replace(instance, prefab);
+        }
+
+        /// <summary>
         /// Moves the specified instance to the top of the stack. If the instance is not in the stack, does nothing.
         /// </summary>
         /// <param name="instance"></param>
@@ -402,11 +466,15 @@ namespace PurrNet.UI
 
         private MonoView AddToStack(MonoView prefab)
         {
-            var idx = _stack.Count;
+            return InsertIntoStack(prefab, _stack.Count);
+        }
+
+        private MonoView InsertIntoStack(MonoView prefab, int idx)
+        {
             var instance = Instantiate(prefab, _parent);
-            _stack.Add(instance);
+            _stack.Insert(idx, instance);
             instance.Initialize(this);
-            instance.UpdateOrder(idx + _orderOffset);
+            UpdateOrder(idx);
             instance.OnPushed();
 
             var transition = instance.EnterTransition();
