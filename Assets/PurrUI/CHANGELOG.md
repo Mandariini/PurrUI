@@ -1,3 +1,10 @@
+## [1.3.1-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.3.1-beta.1...v1.3.1-beta.2) (2026-03-18)
+
+
+### Bug Fixes
+
+* reset parentStack when not part of a viewStack ([b71a09f](https://github.com/PurrNet/PurrUI/commit/b71a09f8efa8a35ac1fe70e4473a34f437bd9c73))
+
 ## [1.3.1-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.3.0...v1.3.1-beta.1) (2026-03-13)
 
 
