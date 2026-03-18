@@ -1,3 +1,10 @@
+## [1.3.1-beta.3](https://github.com/PurrNet/PurrUI/compare/v1.3.1-beta.2...v1.3.1-beta.3) (2026-03-18)
+
+
+### Bug Fixes
+
+* allow to replace a specific view instance ([344f199](https://github.com/PurrNet/PurrUI/commit/344f1997ca32aba5adfa88ccd6a8d385f2f31314))
+
 ## [1.3.1-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.3.1-beta.1...v1.3.1-beta.2) (2026-03-18)
 
 
