@@ -244,9 +244,12 @@ namespace PurrNet.UI
             {
                 var newTopIdx = _stack.Count - 1;
                 var newTop = _stack[newTopIdx];
-                newTop.transform.SetAsLastSibling();
-                newTop.MoveToForeground();
-                newTop.UpdateOrder(newTopIdx + _orderOffset);
+                if (newTop)
+                {
+                    newTop.transform.SetAsLastSibling();
+                    newTop.MoveToForeground();
+                    newTop.UpdateOrder(newTopIdx + _orderOffset);
+                }
             }
             UpdateVisibility();
         }
@@ -256,8 +259,13 @@ namespace PurrNet.UI
         /// </summary>
         public void Clear()
         {
-            while (_stack.Count > 0)
-                Pop();
+            for (int i = _stack.Count - 1; i >= 0; i--)
+            {
+                var view = _stack[i];
+                view.OnPopped();
+                view.parentStack = null;
+            }
+            _stack.Clear();
         }
 
         /// <summary>
