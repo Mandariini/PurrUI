@@ -1,3 +1,10 @@
+# [1.4.0-beta.3](https://github.com/PurrNet/PurrUI/compare/v1.4.0-beta.2...v1.4.0-beta.3) (2026-04-13)
+
+
+### Bug Fixes
+
+* make Clear method "cheaper", no need to put everything to foreground etc ([a63c677](https://github.com/PurrNet/PurrUI/commit/a63c6772b868064c7ea0c2facbf58047c7159472))
+
 # [1.4.0-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.4.0-beta.1...v1.4.0-beta.2) (2026-04-13)
 
 
