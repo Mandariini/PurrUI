@@ -547,5 +547,10 @@ namespace PurrNet.UI
             yield return transition;
             if (view) view.DestroyMe();
         }
+
+        private void OnDestroy()
+        {
+            Clear();
+        }
     }
 }
