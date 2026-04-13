@@ -1,3 +1,10 @@
+# [1.4.0-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.4.0-beta.1...v1.4.0-beta.2) (2026-04-13)
+
+
+### Features
+
+* add OnDestroy method to clear view stack ([8d088fc](https://github.com/PurrNet/PurrUI/commit/8d088fc5168ff1b07178f67c51f7c4f2f19c4436))
+
 # [1.4.0-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.3.1-beta.3...v1.4.0-beta.1) (2026-03-18)
 
 
