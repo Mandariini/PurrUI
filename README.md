@@ -250,6 +250,17 @@ protected override IEnumerator OnExitTransition()
 - **Cull Windows Behind**: If a view has `cullWindowsBehind` enabled, all views below it in the stack have their `Canvas` disabled entirely. Useful for fullscreen views where nothing behind them is visible.
 - **OnBecomeForeground**: Override this virtual method in your `MonoView` subclass to react when the view returns to the top of the stack (e.g., after the view above it is popped).
 
+# Color Palette
+
+Color Palette Scriptable Object:
+<img width="402" height="739" alt="image" src="https://github.com/user-attachments/assets/364494b0-a5d9-4978-abc5-b9100ddd65a1" />
+
+Colored Graphic Component:
+<img width="402" height="318" alt="image" src="https://github.com/user-attachments/assets/103486d4-2121-4bb3-8676-06183b564c99" />
+
+The `ColoredGraphic` will pick the closest `IPaletteProvder`, the `ViewStack` is one and you can also add a `PaletteProvider` component closer to override specific parts of your UI's theme/colors.
+It can also auto transition between different colors for a silky smooth change.
+
 # Sounds2D
 
 A lightweight, fire-and-forget 2D audio system. It manages a small pool of `AudioSource` components (up to 5) on a `DontDestroyOnLoad` GameObject, so you never have to wire up audio sources yourself.
