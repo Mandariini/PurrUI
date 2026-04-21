@@ -1,3 +1,10 @@
+# [1.5.0-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.4.0...v1.5.0-beta.1) (2026-04-21)
+
+
+### Features
+
+* palette theming system with transition-based ColoredGraphic ([b7f0642](https://github.com/PurrNet/PurrUI/commit/b7f0642e0e47cd1e6efa8a5433a84b004a97baea))
+
 # [1.4.0](https://github.com/PurrNet/PurrUI/compare/v1.3.0...v1.4.0) (2026-04-21)
 
 
