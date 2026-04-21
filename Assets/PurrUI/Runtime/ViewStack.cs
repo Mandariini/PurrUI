@@ -5,11 +5,12 @@ using UnityEngine;
 
 namespace PurrNet.UI
 {
-    public class ViewStack : MonoBehaviour
+    public class ViewStack : MonoBehaviour, IPaletteProvider
     {
         [SerializeField] private Transform _parent;
         [SerializeField, HideInInspector, Obsolete] private ViewCollection _prefabs;
         [SerializeField] private List<ViewCollection> _prefabCollections;
+        [SerializeField] private ColorPalette _colorPalette;
         [SerializeField] private MonoView _pushOnStart;
         [SerializeField] private int _orderOffset;
 
@@ -18,6 +19,36 @@ namespace PurrNet.UI
         private readonly Dictionary<MonoView, Coroutine> _uncullCoroutines = new();
 
         public MonoView top => _stack.Count > 0 ? _stack[^1] : null;
+
+        public event Action onColorChange;
+
+        public ColorPalette palette
+        {
+            get
+            {
+                return _colorPalette;
+            }
+            set
+            {
+                var old = _colorPalette;
+                if (old)
+                    old.onChange -= OnColorPaletteDirty;
+                _colorPalette = value;
+                onColorChange?.Invoke();
+                _colorPalette.onChange += OnColorPaletteDirty;
+            }
+        }
+
+        private void Awake()
+        {
+            if (_colorPalette)
+                _colorPalette.onChange += OnColorPaletteDirty;
+        }
+
+        private void OnColorPaletteDirty()
+        {
+            onColorChange?.Invoke();
+        }
 
         private void Start()
         {
@@ -558,6 +589,8 @@ namespace PurrNet.UI
 
         private void OnDestroy()
         {
+            if (_colorPalette)
+                _colorPalette.onChange -= OnColorPaletteDirty;
             Clear();
         }
     }

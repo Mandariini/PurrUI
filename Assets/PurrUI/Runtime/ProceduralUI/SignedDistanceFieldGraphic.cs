@@ -27,7 +27,7 @@ namespace PurrNet.UI
     }
 
     [RequireComponent(typeof(CanvasRenderer))]
-    public class SignedDistanceFieldGraphic : MaskableGraphic
+    public class SignedDistanceFieldGraphic : MaskableGraphic, IColored
     {
         const string SHADER_NAME = "Hidden/PurrUI/RectangleRenderer";
 
@@ -460,6 +460,32 @@ namespace PurrNet.UI
                     vh.AddTriangle(i + cols + 1, i + 1, i);
                 }
             }
+        }
+
+        private static readonly string[] _keys = {
+            "Graphic",
+            "Gradient",
+            "Outline",
+            "Shadow",
+            "Emboss Highlight",
+            "Emboss Shadow"
+        };
+
+        public string[] keys => _keys;
+
+        public void SetColor(int keyIndex, Color color)
+        {
+            switch (keyIndex)
+            {
+                case 0: graphicColor = color; break;
+                case 1: gradientColor = color; break;
+                case 2: outlineColor = color; break;
+                case 3: shadowColor = color; break;
+                case 4: embossHighlightColor = color; break;
+                case 5: embossShadowColor = color; break;
+            }
+
+            SetVerticesDirty();
         }
     }
 }

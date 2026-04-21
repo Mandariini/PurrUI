@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PurrNet.UI
 {
-    [CreateAssetMenu(menuName = "PurrNet/View Collection", order = 500)]
+    [CreateAssetMenu(menuName = "PurrNet/PurrUI/View Collection", order = 500)]
     public class ViewCollection : ScriptableObject
     {
         [UsedImplicitly]

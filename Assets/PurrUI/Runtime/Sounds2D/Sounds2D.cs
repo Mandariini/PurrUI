@@ -19,7 +19,11 @@ namespace PurrNet.UI
                 return _me;
 
             var go = new GameObject("Sounds2D");
-            DontDestroyOnLoad(go);
+
+            if (Application.isPlaying)
+                DontDestroyOnLoad(go);
+            else go.hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy;
+
             _me = go.AddComponent<Sounds2D>();
             return _me;
         }
