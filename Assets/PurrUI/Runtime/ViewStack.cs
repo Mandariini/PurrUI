@@ -102,6 +102,9 @@ namespace PurrNet.UI
         /// </summary>
         public MonoView Push(MonoView prefab)
         {
+            if (!Application.isPlaying)
+                return null;
+
             if (prefab == null)
             {
                 Debug.LogError("[WindowStack] Provided prefab is null.", this);
@@ -226,6 +229,9 @@ namespace PurrNet.UI
         /// </summary>
         public void Pop()
         {
+            if (!Application.isPlaying)
+                return;
+
             if (_stack.Count == 0)
             {
                 Debug.LogError("[WindowStack] No windows to pop.", this);
@@ -238,9 +244,12 @@ namespace PurrNet.UI
             {
                 var newTopIdx = _stack.Count - 1;
                 var newTop = _stack[newTopIdx];
-                newTop.transform.SetAsLastSibling();
-                newTop.MoveToForeground();
-                newTop.UpdateOrder(newTopIdx + _orderOffset);
+                if (newTop)
+                {
+                    newTop.transform.SetAsLastSibling();
+                    newTop.MoveToForeground();
+                    newTop.UpdateOrder(newTopIdx + _orderOffset);
+                }
             }
             UpdateVisibility();
         }
@@ -250,8 +259,13 @@ namespace PurrNet.UI
         /// </summary>
         public void Clear()
         {
-            while (_stack.Count > 0)
-                Pop();
+            for (int i = _stack.Count - 1; i >= 0; i--)
+            {
+                var view = _stack[i];
+                view.OnPopped();
+                view.parentStack = null;
+            }
+            _stack.Clear();
         }
 
         /// <summary>
@@ -260,6 +274,9 @@ namespace PurrNet.UI
         /// <param name="instance"></param>
         public void Pop(MonoView instance)
         {
+            if (!Application.isPlaying)
+                return;
+
             int idx = _stack.IndexOf(instance);
 
             if (idx == -1)
@@ -277,6 +294,7 @@ namespace PurrNet.UI
 
             _stack.RemoveAt(idx);
             instance.OnPopped();
+            instance.parentStack = null;
 
             var transition = instance.ExitTransition();
             if (transition != null)
@@ -300,6 +318,9 @@ namespace PurrNet.UI
         /// </summary>
         public MonoView Replace(MonoView prefab)
         {
+            if (!Application.isPlaying)
+                return null;
+
             if (prefab == null)
             {
                 Debug.LogError("[WindowStack] Provided prefab is null.", this);
@@ -326,6 +347,108 @@ namespace PurrNet.UI
             }
 
             return (T)Replace(prefab);
+        }
+
+        /// <summary>
+        /// Replaces the specified instance in the stack with a new window instantiated from the provided prefab.
+        /// The old instance plays its exit transition while the new one plays its enter transition.
+        /// The new window takes the same position in the stack as the old one.
+        /// </summary>
+        public MonoView Replace(MonoView instance, MonoView prefab)
+        {
+            if (!Application.isPlaying)
+                return null;
+
+            if (prefab == null)
+            {
+                Debug.LogError("[WindowStack] Provided prefab is null.", this);
+                return null;
+            }
+
+            int idx = _stack.IndexOf(instance);
+
+            if (idx == -1)
+            {
+                Debug.LogError("[WindowStack] The provided window instance is not in the stack.", this);
+                return null;
+            }
+
+            // If it's the top window, use the regular Replace method
+            if (idx == _stack.Count - 1)
+                return Replace(prefab);
+
+            // Remove the instance at its position
+            _stack.RemoveAt(idx);
+            instance.OnPopped();
+            instance.parentStack = null;
+
+            var exitTransition = instance.ExitTransition();
+            if (exitTransition != null)
+            {
+                instance.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(instance, exitTransition));
+            }
+            else
+            {
+                instance.DestroyMe();
+            }
+
+            // Insert new instance at the same position
+            return InsertIntoStack(prefab, idx);
+        }
+
+        /// <summary>
+        /// Replaces the specified instance in the stack with a new window of the specified type.
+        /// The old instance plays its exit transition while the new one plays its enter transition.
+        /// The new window takes the same position in the stack as the old one.
+        /// </summary>
+        public T Replace<T>(MonoView instance) where T : MonoView
+        {
+            if (!TryGet<T>(out var prefab))
+            {
+                Debug.LogError($"[WindowStack] No window prefab of type `{typeof(T)}` found in WindowPrefabs.", this);
+                return null;
+            }
+
+            return (T)Replace(instance, prefab);
+        }
+
+        /// <summary>
+        /// Replaces the specified instance in the stack with a new window instantiated from the provided prefab.
+        /// If the instance is no longer part of the stack, pushes the new window instead.
+        /// </summary>
+        public MonoView ReplaceOrPush(MonoView instance, MonoView prefab)
+        {
+            if (!Application.isPlaying)
+                return null;
+
+            if (prefab == null)
+            {
+                Debug.LogError("[WindowStack] Provided prefab is null.", this);
+                return null;
+            }
+
+            int idx = _stack.IndexOf(instance);
+
+            if (idx == -1)
+                return Push(prefab);
+
+            return Replace(instance, prefab);
+        }
+
+        /// <summary>
+        /// Replaces the specified instance in the stack with a new window of the specified type.
+        /// If the instance is no longer part of the stack, pushes the new window instead.
+        /// </summary>
+        public T ReplaceOrPush<T>(MonoView instance) where T : MonoView
+        {
+            if (!TryGet<T>(out var prefab))
+            {
+                Debug.LogError($"[WindowStack] No window prefab of type `{typeof(T)}` found in WindowPrefabs.", this);
+                return null;
+            }
+
+            return (T)ReplaceOrPush(instance, prefab);
         }
 
         /// <summary>
@@ -372,6 +495,7 @@ namespace PurrNet.UI
             var topView = _stack[^1];
             _stack.RemoveAt(_stack.Count - 1);
             topView.OnPopped();
+            topView.parentStack = null;
 
             var transition = topView.ExitTransition();
             if (transition != null)
@@ -388,11 +512,15 @@ namespace PurrNet.UI
 
         private MonoView AddToStack(MonoView prefab)
         {
-            var idx = _stack.Count;
+            return InsertIntoStack(prefab, _stack.Count);
+        }
+
+        private MonoView InsertIntoStack(MonoView prefab, int idx)
+        {
             var instance = Instantiate(prefab, _parent);
-            _stack.Add(instance);
+            _stack.Insert(idx, instance);
             instance.Initialize(this);
-            instance.UpdateOrder(idx + _orderOffset);
+            UpdateOrder(idx);
             instance.OnPushed();
 
             var transition = instance.EnterTransition();
@@ -426,6 +554,11 @@ namespace PurrNet.UI
         {
             yield return transition;
             if (view) view.DestroyMe();
+        }
+
+        private void OnDestroy()
+        {
+            Clear();
         }
     }
 }
