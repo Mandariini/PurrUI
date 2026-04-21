@@ -1,3 +1,19 @@
+# [1.4.0](https://github.com/PurrNet/PurrUI/compare/v1.3.0...v1.4.0) (2026-04-21)
+
+
+### Bug Fixes
+
+* allow to replace a specific view instance ([344f199](https://github.com/PurrNet/PurrUI/commit/344f1997ca32aba5adfa88ccd6a8d385f2f31314))
+* dont push/pop/replace outside of play mode, just a guardrail for users ([558d71a](https://github.com/PurrNet/PurrUI/commit/558d71a8f2b30411b1c5a06fd149305a2a02d98c))
+* make Clear method "cheaper", no need to put everything to foreground etc ([a63c677](https://github.com/PurrNet/PurrUI/commit/a63c6772b868064c7ea0c2facbf58047c7159472))
+* reset parentStack when not part of a viewStack ([b71a09f](https://github.com/PurrNet/PurrUI/commit/b71a09f8efa8a35ac1fe70e4473a34f437bd9c73))
+
+
+### Features
+
+* add OnDestroy method to clear view stack ([8d088fc](https://github.com/PurrNet/PurrUI/commit/8d088fc5168ff1b07178f67c51f7c4f2f19c4436))
+* ReplaceOrPush ([71e09f6](https://github.com/PurrNet/PurrUI/commit/71e09f6dd7729fd10ed1ad55cffd01d39fd8dba0))
+
 # [1.4.0-beta.3](https://github.com/PurrNet/PurrUI/compare/v1.4.0-beta.2...v1.4.0-beta.3) (2026-04-13)
 
 
