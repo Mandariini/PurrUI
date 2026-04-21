@@ -1,3 +1,10 @@
+# [1.5.0-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.1...v1.5.0-beta.2) (2026-04-21)
+
+
+### Features
+
+* color palette fun little preview of the mashup ([7209077](https://github.com/PurrNet/PurrUI/commit/7209077e2c30eed39465635169e1530629dbb696))
+
 # [1.5.0-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.4.0...v1.5.0-beta.1) (2026-04-21)
 
 
