@@ -1,3 +1,10 @@
+# [1.5.0-beta.3](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.2...v1.5.0-beta.3) (2026-04-25)
+
+
+### Bug Fixes
+
+* editor ([ca5353b](https://github.com/PurrNet/PurrUI/commit/ca5353b8aee33e96a2c08876fb7ac8adeac102a0))
+
 # [1.5.0-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.1...v1.5.0-beta.2) (2026-04-21)
 
 
