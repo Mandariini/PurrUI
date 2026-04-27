@@ -1,3 +1,10 @@
+# [1.5.0-beta.4](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.3...v1.5.0-beta.4) (2026-04-27)
+
+
+### Bug Fixes
+
+* check for null in ClickSounds.cs ([4d3239b](https://github.com/PurrNet/PurrUI/commit/4d3239b9c9b385e815e5f67675d746b3267b8b46))
+
 # [1.5.0-beta.3](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.2...v1.5.0-beta.3) (2026-04-25)
 
 
