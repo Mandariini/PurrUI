@@ -7,6 +7,10 @@ namespace PurrNet.UI.HeroUI
     {
         [SerializeField] private AudioSessionPreset _clickSound;
 
-        public void OnPointerDown(PointerEventData eventData) => _clickSound.Play();
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (_clickSound)
+                _clickSound.Play();
+        }
     }
 }
