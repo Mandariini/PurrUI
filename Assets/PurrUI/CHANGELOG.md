@@ -1,3 +1,10 @@
+# [1.5.0-beta.6](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.5...v1.5.0-beta.6) (2026-06-01)
+
+
+### Bug Fixes
+
+* ignore glow grapgics for layouts ([6e88652](https://github.com/PurrNet/PurrUI/commit/6e88652b7124216abb9d2c0eb0d47c8f8f4cf0e5))
+
 # [1.5.0-beta.5](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.4...v1.5.0-beta.5) (2026-06-01)
 
 
