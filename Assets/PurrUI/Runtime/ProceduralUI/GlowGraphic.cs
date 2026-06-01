@@ -8,7 +8,7 @@ namespace PurrNet.UI
 #else
     [AddComponentMenu("UI/PurrUI/Glow Graphic")]
 #endif
-    public class GlowGraphic : SignedDistanceFieldGraphic
+    public class GlowGraphic : SignedDistanceFieldGraphic, ILayoutIgnorer
     {
         const string GLOW_SHADER_NAME = "Hidden/PurrUI/GlowRenderer";
 
@@ -458,5 +458,7 @@ namespace PurrNet.UI
                 }
             }
         }
+
+        public bool ignoreLayout => true;
     }
 }
