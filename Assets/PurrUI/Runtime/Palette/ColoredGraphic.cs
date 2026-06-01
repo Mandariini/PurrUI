@@ -62,35 +62,52 @@ namespace PurrNet.UI
         private void OnValidate()
         {
             if (!isActiveAndEnabled) return;
-            if (_paletteProvider == null) return;
-
             _colorsDirty = true;
         }
 
         private void OnEnable()
         {
-            if (!_graphic)
-                return;
+            ResolveProvider();
 
-            _paletteProvider = GetComponentInParent<IPaletteProvider>();
-
-            if (_paletteProvider != null)
-            {
-                _paletteProvider.onColorChange += ColorsUpdated;
-                ApplyImmediate();
-            }
+            _colorsDirty = true;
+            ApplyImmediate();
         }
 
         private void OnDisable()
         {
-            if  (_paletteProvider != null)
+            if (_paletteProvider != null)
                 _paletteProvider.onColorChange -= ColorsUpdated;
+            _paletteProvider = null;
+        }
+
+        private void ResolveProvider()
+        {
+            var found = GetComponentInParent<IPaletteProvider>();
+
+            if (ReferenceEquals(found, _paletteProvider))
+                return;
+
+            if (_paletteProvider != null)
+                _paletteProvider.onColorChange -= ColorsUpdated;
+
+            _paletteProvider = found;
+
+            if (_paletteProvider != null)
+                _paletteProvider.onColorChange += ColorsUpdated;
         }
 
         private void Update()
         {
             if (!_graphic) return;
-            if (_paletteProvider == null || !_paletteProvider.palette) return;
+
+            if (_colorsDirty && _paletteProvider == null)
+                ResolveProvider();
+
+            if (_paletteProvider == null || !_paletteProvider.palette)
+            {
+                _colorsDirty = false;
+                return;
+            }
 
             if (_colorsDirty)
             {
@@ -119,7 +136,7 @@ namespace PurrNet.UI
 
         private void ApplyImmediate()
         {
-            if (_paletteProvider?.palette == null)
+            if (!_graphic || _paletteProvider?.palette == null)
                 return;
 
             RefreshTargets(snap: true);
