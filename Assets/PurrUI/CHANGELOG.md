@@ -1,3 +1,10 @@
+# [1.5.0-beta.5](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.4...v1.5.0-beta.5) (2026-06-01)
+
+
+### Bug Fixes
+
+* improve palette provider handling in ColoredGraphic ([9c91ba1](https://github.com/PurrNet/PurrUI/commit/9c91ba1910a7a96c6233dab6f7ed0c0245a9e1d2))
+
 # [1.5.0-beta.4](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.3...v1.5.0-beta.4) (2026-04-27)
 
 
