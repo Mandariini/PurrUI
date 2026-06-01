@@ -267,8 +267,10 @@ namespace PurrNet.UI
 
             // Ensure glow renders before us (behind)
             int myIdx = transform.GetSiblingIndex();
-            if (glowT.GetSiblingIndex() != myIdx - 1)
-                glowT.SetSiblingIndex(myIdx);
+            int glowIdx = glowT.GetSiblingIndex();
+            int targetIdx = glowIdx < myIdx ? myIdx - 1 : myIdx;
+            if (glowIdx != targetIdx)
+                glowT.SetSiblingIndex(targetIdx);
 
             // Sync RectTransform
             var glowRT = _glowGraphic.rectTransform;

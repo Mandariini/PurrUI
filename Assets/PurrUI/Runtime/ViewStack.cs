@@ -486,39 +486,103 @@ namespace PurrNet.UI
         /// Moves the specified instance to the top of the stack. If the instance is not in the stack, does nothing.
         /// </summary>
         /// <param name="instance"></param>
-        public void MoveToTop(MonoView instance)
+        public bool MoveToTop(MonoView instance)
         {
             int idx = _stack.IndexOf(instance);
             if (idx == -1)
             {
                 Debug.LogError("[WindowStack] The provided window instance is not in the stack.", this);
-                return;
+                return false;
             }
 
             if (idx == _stack.Count - 1)
-                return;
+                return false;
 
             _stack.RemoveAt(idx);
             _stack.Add(instance);
             instance.transform.SetAsLastSibling();
             UpdateOrder(idx);
             UpdateVisibility();
+            return true;
+        }
+
+        public bool TryMoveToTop(MonoView instance)
+        {
+            int idx = _stack.IndexOf(instance);
+            if (idx == -1)
+                return false;
+
+            if (idx == _stack.Count - 1)
+                return false;
+
+            _stack.RemoveAt(idx);
+            _stack.Add(instance);
+            instance.transform.SetAsLastSibling();
+            UpdateOrder(idx);
+            UpdateVisibility();
+            return true;
         }
 
         /// <summary>
         /// Moves the first instance of the specified type to the top of the stack. If no instance of that type is found, does nothing.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public void MoveToTop<T>() where T : MonoView
+        public bool MoveToTop<T>() where T : MonoView
         {
             for (int i = 0; i < _stack.Count; i++)
             {
                 if (_stack[i] is T instance)
+                    return MoveToTop(instance);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Moves the first instance of the specified type to the top of the stack. If no instance of that type is found, does nothing.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public bool TryMoveToTop<T>() where T : MonoView
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                if (_stack[i] is T instance)
+                    return TryMoveToTop(instance);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the stack contains at least one instance of the specified type, false otherwise.
+        /// </summary>
+        public bool Contains<T>() where T : MonoView
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                if (_stack[i] is T)
                 {
-                    MoveToTop(instance);
-                    return;
+                    return true;
                 }
             }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the first instance of the specified type in the stack, or null if no instance of that type is found.
+        /// </summary>
+        public T GetFirstView<T>() where T : MonoView
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                if (_stack[i] is T view)
+                {
+                    return view;
+                }
+            }
+
+            return null;
         }
 
         private void RemoveTop()
