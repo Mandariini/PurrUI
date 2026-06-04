@@ -32,7 +32,7 @@ namespace PurrNet.Editor.UI
             if (_graphicProp.hasMultipleDifferentValues)
             {
                 EditorGUILayout.HelpBox("Multi-selection has different Graphic targets — edit individually.", MessageType.Info);
-                serializedObject.ApplyModifiedProperties();
+                ApplyAndRefresh();
                 return;
             }
 
@@ -41,7 +41,7 @@ namespace PurrNet.Editor.UI
             if (graphic == null)
             {
                 EditorGUILayout.HelpBox("Assign a Graphic to color.", MessageType.Info);
-                serializedObject.ApplyModifiedProperties();
+                ApplyAndRefresh();
                 return;
             }
 
@@ -50,7 +50,7 @@ namespace PurrNet.Editor.UI
             else
                 EditorGUILayout.PropertyField(_colorProp, new GUIContent("Color"));
 
-            serializedObject.ApplyModifiedProperties();
+            ApplyAndRefresh();
         }
 
         void DrawMultiKey(IColored colored)
@@ -71,6 +71,19 @@ namespace PurrNet.Editor.UI
                 var element = _coloredInfosProp.GetArrayElementAtIndex(i);
                 var label = new GUIContent($"[{i}] {keys[i]}", $"Index {i} — use SetColor({i}, ...) at runtime.");
                 EditorGUILayout.PropertyField(element, label, true);
+            }
+        }
+
+        void ApplyAndRefresh()
+        {
+            if (!serializedObject.ApplyModifiedProperties())
+                return;
+
+            foreach (var obj in targets)
+            {
+                if (obj is not ColoredGraphic coloredGraphic) continue;
+                coloredGraphic.Refresh();
+                EditorUtility.SetDirty(coloredGraphic);
             }
         }
     }

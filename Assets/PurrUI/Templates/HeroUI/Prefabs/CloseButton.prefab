@@ -308,6 +308,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: PurrLobby.Runtime::PurrLobby.ButtonElement
   _graphic: {fileID: 5449262722314579291}
+  _interactable: 1
   _transitionCurve:
     serializedVersion: 2
     m_Curve:
@@ -334,6 +335,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   _backgroundNormal: {r: 0.15294118, g: 0.15294118, b: 0.15686275, a: 1}
   _backgroundHover: {r: 0.21568628, g: 0.21568628, b: 0.21960784, a: 1}
+  _disabledAlpha: 0.5
   _scaleNormal: 1
   _scaleClicked: 0.99
   _transitionDuration: 0.2

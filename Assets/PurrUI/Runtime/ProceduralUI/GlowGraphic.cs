@@ -34,7 +34,13 @@ namespace PurrNet.UI
         [SerializeField, Min(0f)] float _blur = 10f;
         [SerializeField, Min(0.01f)] float _power = 1f;
 
-        [System.NonSerialized] internal GlowModifier owner;
+        [SerializeField, HideInInspector] GlowModifier _owner;
+
+        internal GlowModifier owner
+        {
+            get => _owner;
+            set => _owner = value;
+        }
 
         static Material _glowMaterial;
 

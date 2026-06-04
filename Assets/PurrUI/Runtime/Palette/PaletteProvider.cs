@@ -3,9 +3,11 @@ using UnityEngine;
 
 namespace PurrNet.UI
 {
+    [ExecuteAlways]
     public class PaletteProvider : MonoBehaviour, IPaletteProvider
     {
         [SerializeField] private ColorPalette _colorPalette;
+        private ColorPalette _subscribedPalette;
 
         public event Action onColorChange;
 
@@ -17,30 +19,58 @@ namespace PurrNet.UI
             }
             set
             {
-                var old = _colorPalette;
-                if (old)
-                    old.onChange -= OnColorPaletteDirty;
+                if (_colorPalette == value)
+                    return;
+
                 _colorPalette = value;
+                if (isActiveAndEnabled)
+                    SubscribeToPalette();
                 onColorChange?.Invoke();
-                _colorPalette.onChange += OnColorPaletteDirty;
             }
         }
 
-        private void Awake()
+        private void OnEnable()
         {
-            if (_colorPalette)
-                _colorPalette.onChange += OnColorPaletteDirty;
+            SubscribeToPalette();
+            onColorChange?.Invoke();
+        }
+
+        private void OnDisable()
+        {
+            UnsubscribeFromPalette();
+        }
+
+        private void OnValidate()
+        {
+            if (isActiveAndEnabled)
+                SubscribeToPalette();
+            onColorChange?.Invoke();
+        }
+
+        private void SubscribeToPalette()
+        {
+            if (_subscribedPalette == _colorPalette)
+                return;
+
+            UnsubscribeFromPalette();
+
+            _subscribedPalette = _colorPalette;
+            if (_subscribedPalette)
+                _subscribedPalette.onChange += OnColorPaletteDirty;
+        }
+
+        private void UnsubscribeFromPalette()
+        {
+            if (!_subscribedPalette)
+                return;
+
+            _subscribedPalette.onChange -= OnColorPaletteDirty;
+            _subscribedPalette = null;
         }
 
         private void OnColorPaletteDirty()
         {
             onColorChange?.Invoke();
-        }
-
-        private void OnDestroy()
-        {
-            if (_colorPalette)
-                _colorPalette.onChange -= OnColorPaletteDirty;
         }
     }
 }

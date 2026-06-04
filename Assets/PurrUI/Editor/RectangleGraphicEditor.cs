@@ -196,7 +196,15 @@ namespace PurrNet.Editor.UI
             EditorGUILayout.PropertyField(_maskable);
             EndSection();
 
-            serializedObject.ApplyModifiedProperties();
+            if (serializedObject.ApplyModifiedProperties())
+            {
+                foreach (var obj in targets)
+                {
+                    if (obj is not RectangleGraphic graphic) continue;
+                    graphic.Refresh();
+                    EditorUtility.SetDirty(graphic);
+                }
+            }
         }
 
         static GUIStyle _sectionStyle;

@@ -20,6 +20,9 @@ namespace PurrNet.UI
 
         private IPaletteProvider _paletteProvider;
         private bool _colorsDirty;
+#if UNITY_EDITOR
+        private bool _editorApplyQueued;
+#endif
 
         private Color[] _current;
         private Color[] _start;
@@ -57,12 +60,17 @@ namespace PurrNet.UI
             }
 
             _colorsDirty = true;
+#if UNITY_EDITOR
+            QueueEditorApply();
+#endif
         }
 
         private void OnValidate()
         {
-            if (!isActiveAndEnabled) return;
             _colorsDirty = true;
+#if UNITY_EDITOR
+            QueueEditorApply();
+#endif
         }
 
         private void OnEnable()
@@ -82,7 +90,7 @@ namespace PurrNet.UI
 
         private void ResolveProvider()
         {
-            var found = GetComponentInParent<IPaletteProvider>();
+            var found = GetComponentInParent<IPaletteProvider>(true);
 
             if (ReferenceEquals(found, _paletteProvider))
                 return;
@@ -105,7 +113,6 @@ namespace PurrNet.UI
 
             if (_paletteProvider == null || !_paletteProvider.palette)
             {
-                _colorsDirty = false;
                 return;
             }
 
@@ -136,11 +143,19 @@ namespace PurrNet.UI
 
         private void ApplyImmediate()
         {
+            ResolveProvider();
+
             if (!_graphic || _paletteProvider?.palette == null)
                 return;
 
             RefreshTargets(snap: true);
             _colorsDirty = false;
+        }
+
+        public void Refresh()
+        {
+            _colorsDirty = true;
+            ApplyImmediate();
         }
 
         private void RefreshTargets(bool snap)
@@ -225,6 +240,10 @@ namespace PurrNet.UI
             {
                 if (slotCount > 0 && _color.enabled)
                     _graphic.color = _current[0];
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    UnityEditor.EditorUtility.SetDirty(_graphic);
+#endif
                 return;
             }
 
@@ -234,16 +253,54 @@ namespace PurrNet.UI
                 if (_coloredInfos[i].enabled)
                     colored.SetColor(i, _current[i]);
             }
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+                UnityEditor.EditorUtility.SetDirty(_graphic);
+#endif
         }
 
         private void ColorsUpdated()
         {
             _colorsDirty = true;
+#if UNITY_EDITOR
+            QueueEditorApply();
+#endif
+        }
+
+        private void OnTransformParentChanged()
+        {
+            ResolveProvider();
+            ColorsUpdated();
+        }
+
+        private void OnDidApplyAnimationProperties()
+        {
+            ColorsUpdated();
         }
 
         private void Reset()
         {
             _graphic = GetComponent<Graphic>();
         }
+
+#if UNITY_EDITOR
+        private void QueueEditorApply()
+        {
+            if (Application.isPlaying || _editorApplyQueued)
+                return;
+
+            _editorApplyQueued = true;
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                _editorApplyQueued = false;
+                if (!this || !isActiveAndEnabled) return;
+
+                ApplyImmediate();
+                UnityEditor.SceneView.RepaintAll();
+            };
+        }
+#endif
     }
 }

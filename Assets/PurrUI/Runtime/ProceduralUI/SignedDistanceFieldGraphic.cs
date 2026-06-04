@@ -62,6 +62,15 @@ namespace PurrNet.UI
         [SerializeField] Color _embossShadowColor = Color.black;
 
         static Material _sharedMaterial;
+        public const AdditionalCanvasShaderChannels RequiredCanvasChannels =
+            AdditionalCanvasShaderChannels.TexCoord1
+            | AdditionalCanvasShaderChannels.TexCoord2
+            | AdditionalCanvasShaderChannels.TexCoord3
+            | AdditionalCanvasShaderChannels.Normal
+            | AdditionalCanvasShaderChannels.Tangent;
+#if UNITY_EDITOR
+        bool _editorRebuildQueued;
+#endif
 
         public Texture texture
         {
@@ -229,8 +238,32 @@ namespace PurrNet.UI
 
         protected override void OnEnable()
         {
-            EnsureAdditionalCanvasChannels();
             base.OnEnable();
+            Refresh();
+        }
+
+        protected override void OnCanvasHierarchyChanged()
+        {
+            base.OnCanvasHierarchyChanged();
+            Refresh();
+        }
+
+        protected override void OnRectTransformDimensionsChange()
+        {
+            base.OnRectTransformDimensionsChange();
+            Refresh();
+        }
+
+        protected override void OnTransformParentChanged()
+        {
+            base.OnTransformParentChanged();
+            Refresh();
+        }
+
+        protected override void OnDidApplyAnimationProperties()
+        {
+            base.OnDidApplyAnimationProperties();
+            Refresh();
         }
 
 #if UNITY_EDITOR
@@ -245,8 +278,38 @@ namespace PurrNet.UI
         {
             if (!_shader)
                 _shader = Shader.Find(SHADER_NAME);
-            EnsureAdditionalCanvasChannels();
             base.OnValidate();
+            Refresh();
+        }
+#endif
+
+        public void Refresh()
+        {
+            EnsureAdditionalCanvasChannels();
+            SetAllDirty();
+#if UNITY_EDITOR
+            QueueEditorRebuild();
+#endif
+        }
+
+#if UNITY_EDITOR
+        void QueueEditorRebuild()
+        {
+            if (Application.isPlaying || _editorRebuildQueued)
+                return;
+
+            _editorRebuildQueued = true;
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                _editorRebuildQueued = false;
+                if (!this || !isActiveAndEnabled) return;
+
+                EnsureAdditionalCanvasChannels();
+                SetAllDirty();
+                Canvas.ForceUpdateCanvases();
+                UnityEditor.SceneView.RepaintAll();
+            };
         }
 #endif
 
@@ -254,14 +317,7 @@ namespace PurrNet.UI
         {
             if (!canvas) return;
             var rootCanvas = canvas.rootCanvas;
-
-            const AdditionalCanvasShaderChannels required = AdditionalCanvasShaderChannels.TexCoord1
-                                                            | AdditionalCanvasShaderChannels.TexCoord2
-                                                            | AdditionalCanvasShaderChannels.TexCoord3
-                                                            | AdditionalCanvasShaderChannels.Normal
-                                                            | AdditionalCanvasShaderChannels.Tangent;
-
-            rootCanvas.additionalShaderChannels |= required;
+            rootCanvas.additionalShaderChannels |= RequiredCanvasChannels;
         }
 
         protected virtual Vector4 GetRoundness()

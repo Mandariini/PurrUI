@@ -37,132 +37,139 @@ namespace PurrNet.UI
         [SerializeField] Vector4 _roundnessInPixels;
 
         bool _dirty = true;
+#if UNITY_EDITOR
+        bool _editorSyncQueued;
+#endif
 
         public bool hasSource => GetComponent<RectangleGraphic>();
 
         public Vector2 offset
         {
             get => _offset;
-            set { _offset = value; _dirty = true; }
+            set { _offset = value; SetDirty(); }
         }
 
         public float extraSize
         {
             get => _extraSize;
-            set { _extraSize = value; _dirty = true; }
+            set { _extraSize = value; SetDirty(); }
         }
 
         public Color glowColor
         {
             get => _glowColor;
-            set { _glowColor = value; _dirty = true; }
+            set { _glowColor = value; SetDirty(); }
         }
 
         public GradientType glowGradientType
         {
             get => _glowGradientType;
-            set { _glowGradientType = value; _dirty = true; }
+            set { _glowGradientType = value; SetDirty(); }
         }
 
         public Color glowGradientColor
         {
             get => _glowGradientColor;
-            set { _glowGradientColor = value; _dirty = true; }
+            set { _glowGradientColor = value; SetDirty(); }
         }
 
         public int glowGradientQuality
         {
             get => _glowGradientQuality;
-            set { _glowGradientQuality = Mathf.Clamp(value, 2, 20); _dirty = true; }
+            set { _glowGradientQuality = Mathf.Clamp(value, 2, 20); SetDirty(); }
         }
 
         public RadialMode glowRadialMode
         {
             get => _glowRadialMode;
-            set { _glowRadialMode = value; _dirty = true; }
+            set { _glowRadialMode = value; SetDirty(); }
         }
 
         public float glowGradientSize
         {
             get => _glowGradientSize;
-            set { _glowGradientSize = Mathf.Max(0.01f, value); _dirty = true; }
+            set { _glowGradientSize = Mathf.Max(0.01f, value); SetDirty(); }
         }
 
         public Gradient glowGradient
         {
             get => _glowGradient;
-            set { _glowGradient = value; _dirty = true; }
+            set { _glowGradient = value; SetDirty(); }
         }
 
         public float glowGradientAngle
         {
             get => _glowGradientAngle;
-            set { _glowGradientAngle = value; _dirty = true; }
+            set { _glowGradientAngle = value; SetDirty(); }
         }
 
         public float spread
         {
             get => _spread;
-            set { _spread = Mathf.Max(0f, value); _dirty = true; }
+            set { _spread = Mathf.Max(0f, value); SetDirty(); }
         }
 
         public float blur
         {
             get => _blur;
-            set { _blur = Mathf.Max(0f, value); _dirty = true; }
+            set { _blur = Mathf.Max(0f, value); SetDirty(); }
         }
 
         public float power
         {
             get => _power;
-            set { _power = Mathf.Max(0.01f, value); _dirty = true; }
+            set { _power = Mathf.Max(0.01f, value); SetDirty(); }
         }
 
         public bool noFill
         {
             get => _noFill;
-            set { _noFill = value; _dirty = true; }
+            set { _noFill = value; SetDirty(); }
         }
 
         public float frameWidth
         {
             get => _frameWidth;
-            set { _frameWidth = Mathf.Max(0f, value); _dirty = true; }
+            set { _frameWidth = Mathf.Max(0f, value); SetDirty(); }
         }
 
         public FramePlacement framePlacement
         {
             get => _framePlacement;
-            set { _framePlacement = value; _dirty = true; }
+            set { _framePlacement = value; SetDirty(); }
         }
 
         public bool useMaxRoundness
         {
             get => _useMaxRoundness;
-            set { _useMaxRoundness = value; _dirty = true; }
+            set { _useMaxRoundness = value; SetDirty(); }
         }
 
         public bool uniformRoundness
         {
             get => _uniformRoundness;
-            set { _uniformRoundness = value; _dirty = true; }
+            set { _uniformRoundness = value; SetDirty(); }
         }
 
         public Vector4 roundnessInPixels
         {
             get => _roundnessInPixels;
-            set { _roundnessInPixels = value; _dirty = true; }
+            set { _roundnessInPixels = value; SetDirty(); }
         }
 
         void OnEnable()
         {
+            Canvas.willRenderCanvases += OnWillRenderCanvases;
             EnsureGlowObject();
-            _dirty = true;
+            SetDirty();
+            SyncNow();
         }
 
         void OnDisable()
         {
-            if (_glowGraphic)
+            Canvas.willRenderCanvases -= OnWillRenderCanvases;
+
+            if (_glowGraphic && OwnsGlowGraphic(_glowGraphic))
                 _glowGraphic.gameObject.SetActive(false);
         }
 
@@ -170,7 +177,7 @@ namespace PurrNet.UI
         {
             if (!_glowGraphic) return;
 
-            if (_glowGraphic.owner != this)
+            if (!OwnsGlowGraphic(_glowGraphic))
             {
                 _glowGraphic = null;
                 return;
@@ -197,25 +204,87 @@ namespace PurrNet.UI
 #if UNITY_EDITOR
         void OnValidate()
         {
-            _dirty = true;
-
-            // Delay to avoid issues during deserialization
-            UnityEditor.EditorApplication.delayCall += () =>
-            {
-                if (!this) return;
-                if (!isActiveAndEnabled)
-                {
-                    if (_glowGraphic)
-                        _glowGraphic.gameObject.SetActive(false);
-                    return;
-                }
-                EnsureGlowObject();
-            };
+            SetDirty();
         }
 #endif
 
         void LateUpdate()
         {
+            SyncNow();
+        }
+
+        void OnWillRenderCanvases()
+        {
+            SyncNow();
+        }
+
+        void OnRectTransformDimensionsChange()
+        {
+            SetDirty();
+        }
+
+        void OnTransformParentChanged()
+        {
+            SetDirty();
+            SyncNow();
+        }
+
+        void OnTransformChildrenChanged()
+        {
+            SetDirty();
+        }
+
+        void OnDidApplyAnimationProperties()
+        {
+            SetDirty();
+        }
+
+        public void Refresh()
+        {
+            SetDirty();
+            SyncNow();
+        }
+
+        void SetDirty()
+        {
+            _dirty = true;
+#if UNITY_EDITOR
+            QueueEditorSync();
+#endif
+        }
+
+#if UNITY_EDITOR
+        void QueueEditorSync()
+        {
+            if (Application.isPlaying || _editorSyncQueued)
+                return;
+
+            _editorSyncQueued = true;
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                _editorSyncQueued = false;
+                if (!this) return;
+
+                if (!isActiveAndEnabled)
+                {
+                    if (_glowGraphic && OwnsGlowGraphic(_glowGraphic))
+                        _glowGraphic.gameObject.SetActive(false);
+                    return;
+                }
+
+                SyncNow();
+                UnityEditor.SceneView.RepaintAll();
+            };
+        }
+#endif
+
+        void SyncNow()
+        {
+            if (!isActiveAndEnabled)
+                return;
+
+            EnsureGlowObject();
             SyncTransform();
 
             if (_dirty)
@@ -230,8 +299,9 @@ namespace PurrNet.UI
             if (_glowGraphic && _glowGraphic.gameObject != gameObject)
             {
                 // Verify this glow actually belongs to us (not stolen via duplication)
-                if (_glowGraphic.owner == this)
+                if (OwnsGlowGraphic(_glowGraphic))
                 {
+                    _glowGraphic.owner = this;
                     _glowGraphic.gameObject.SetActive(true);
                     return;
                 }
@@ -243,7 +313,7 @@ namespace PurrNet.UI
             if (_glowGraphic)
                 return;
 
-            var go = new GameObject("~Glow")
+            var go = new GameObject("~Glow", typeof(RectTransform))
             {
                 hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave
             };
@@ -255,34 +325,69 @@ namespace PurrNet.UI
             SyncTransform();
         }
 
+        bool OwnsGlowGraphic(GlowGraphic glow)
+        {
+            if (!glow)
+                return false;
+
+            if (glow.owner == this)
+                return true;
+
+            if (glow.owner)
+                return false;
+
+            var rect = GetComponent<RectangleGraphic>();
+            if (rect && glow.source == rect)
+                return true;
+
+            if (rect || glow.source || glow.transform.parent != transform.parent)
+                return false;
+
+            return glow.transform.GetSiblingIndex() == Mathf.Max(0, transform.GetSiblingIndex() - 1);
+        }
+
         void SyncTransform()
         {
             if (!_glowGraphic) return;
 
+            bool changed = false;
             var glowT = _glowGraphic.transform;
 
             // Ensure same parent
             if (glowT.parent != transform.parent)
+            {
                 glowT.SetParent(transform.parent, false);
+                changed = true;
+            }
 
             // Ensure glow renders before us (behind)
             int myIdx = transform.GetSiblingIndex();
             int glowIdx = glowT.GetSiblingIndex();
             int targetIdx = glowIdx < myIdx ? myIdx - 1 : myIdx;
             if (glowIdx != targetIdx)
+            {
                 glowT.SetSiblingIndex(targetIdx);
+                changed = true;
+            }
 
             // Sync RectTransform
             var glowRT = _glowGraphic.rectTransform;
-            var myRT = (RectTransform)transform;
+            var myRT = transform as RectTransform;
+            if (!glowRT || !myRT)
+                return;
 
-            glowRT.anchorMin = myRT.anchorMin;
-            glowRT.anchorMax = myRT.anchorMax;
-            glowRT.pivot = myRT.pivot;
-            glowRT.sizeDelta = myRT.sizeDelta;
-            glowRT.anchoredPosition = myRT.anchoredPosition + _offset;
-            glowRT.localRotation = myRT.localRotation;
-            glowRT.localScale = myRT.localScale;
+            var anchoredPosition = myRT.anchoredPosition + _offset;
+
+            if (glowRT.anchorMin != myRT.anchorMin) { glowRT.anchorMin = myRT.anchorMin; changed = true; }
+            if (glowRT.anchorMax != myRT.anchorMax) { glowRT.anchorMax = myRT.anchorMax; changed = true; }
+            if (glowRT.pivot != myRT.pivot) { glowRT.pivot = myRT.pivot; changed = true; }
+            if (glowRT.sizeDelta != myRT.sizeDelta) { glowRT.sizeDelta = myRT.sizeDelta; changed = true; }
+            if (glowRT.anchoredPosition != anchoredPosition) { glowRT.anchoredPosition = anchoredPosition; changed = true; }
+            if (glowRT.localRotation != myRT.localRotation) { glowRT.localRotation = myRT.localRotation; changed = true; }
+            if (glowRT.localScale != myRT.localScale) { glowRT.localScale = myRT.localScale; changed = true; }
+
+            if (changed)
+                _glowGraphic.SetAllDirty();
         }
 
         void SyncAll()
