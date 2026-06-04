@@ -1,3 +1,10 @@
+# [1.5.0-beta.7](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.6...v1.5.0-beta.7) (2026-06-01)
+
+
+### Bug Fixes
+
+* adding some helper functions ([68b80c0](https://github.com/PurrNet/PurrUI/commit/68b80c05bb9db70d4c8a944aa957d74b32fa74e4))
+
 # [1.5.0-beta.6](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.5...v1.5.0-beta.6) (2026-06-01)
 
 
