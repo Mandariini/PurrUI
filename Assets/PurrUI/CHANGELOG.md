@@ -1,3 +1,10 @@
+# [1.5.0-beta.8](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.7...v1.5.0-beta.8) (2026-06-04)
+
+
+### Bug Fixes
+
+* bugs reported bu users ([fb17e2e](https://github.com/PurrNet/PurrUI/commit/fb17e2e0e6d67736acbd6fbe0e3372c440ff48ad))
+
 # [1.5.0-beta.7](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.6...v1.5.0-beta.7) (2026-06-01)
 
 
