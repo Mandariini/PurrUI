@@ -1,3 +1,10 @@
+# [1.5.0-beta.9](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.8...v1.5.0-beta.9) (2026-06-11)
+
+
+### Bug Fixes
+
+* refactoring, completness, optimisations, tests ([efc89a4](https://github.com/PurrNet/PurrUI/commit/efc89a44f13acd6339979b183ba7f0c4db9c5892))
+
 # [1.5.0-beta.8](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.7...v1.5.0-beta.8) (2026-06-04)
 
 
