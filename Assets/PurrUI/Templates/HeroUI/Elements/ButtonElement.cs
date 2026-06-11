@@ -109,6 +109,11 @@ namespace PurrNet.UI.HeroUI
             _trs = transform;
         }
 
+        private void OnEnable()
+        {
+            _parentGroupInteractable = ParentGroupAllowsInteraction();
+        }
+
         private void InteractableChanged()
         {
             _interactableTimer = 0f;
@@ -140,7 +145,8 @@ namespace PurrNet.UI.HeroUI
             var color = Color.Lerp(initialColor, targetColor, colorLerp);
             color.a *= Mathf.Lerp(initialAlphaMult, targetAlphaMult, interactableLerp);
 
-            _graphic.graphicColor  = color;
+            if (_graphic)
+                _graphic.graphicColor = color;
             _trs.localScale = Vector3.Lerp(
                 new Vector3(initialScale, initialScale, 1),
                 new Vector3(targetScale, targetScale, 1), pressLerp);

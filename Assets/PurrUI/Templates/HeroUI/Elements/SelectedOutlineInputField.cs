@@ -34,6 +34,9 @@ namespace PurrNet.UI.HeroUI
 
         private void Update()
         {
+            if (!_input)
+                return;
+
             bool isCurrentlySelected = _input.isFocused;
 
             if (_isSelected != isCurrentlySelected)

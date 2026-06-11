@@ -110,7 +110,10 @@ namespace PurrNet.UI
         [UsedImplicitly]
         public void PopMe()
         {
-            parentStack.Pop(this);
+            if (parentStack)
+                parentStack.Pop(this);
+            else
+                Debug.LogError("[MonoView] View is not part of a ViewStack.", this);
         }
 
         /// <summary>
@@ -119,7 +122,7 @@ namespace PurrNet.UI
         [UsedImplicitly]
         public void CloseMe()
         {
-            parentStack.Pop(this);
+            PopMe();
         }
     }
 }

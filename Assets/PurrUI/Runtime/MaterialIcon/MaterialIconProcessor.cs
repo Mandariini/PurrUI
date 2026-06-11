@@ -67,7 +67,7 @@ namespace PurrNet.UI
 
         public string PreprocessText(string text)
         {
-            if (!_text.richText)
+            if (string.IsNullOrEmpty(text) || !_text || !_text.richText)
                 return text;
 
             const string prefix = "<icon=";

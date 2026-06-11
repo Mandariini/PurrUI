@@ -75,43 +75,43 @@ namespace PurrNet.UI
         public Texture texture
         {
             get => _texture;
-            set { _texture = value; SetVerticesDirty(); SetMaterialDirty(); }
+            set { if (_texture == value) return; _texture = value; SetVerticesDirty(); SetMaterialDirty(); }
         }
 
         public Color graphicColor
         {
             get => _graphicColor;
-            set { _graphicColor = value; SetVerticesDirty(); }
+            set { if (_graphicColor == value) return; _graphicColor = value; SetVerticesDirty(); }
         }
 
         public GradientType gradientType
         {
             get => _gradientType;
-            set { _gradientType = value; SetVerticesDirty(); }
+            set { if (_gradientType == value) return; _gradientType = value; SetVerticesDirty(); }
         }
 
         public Color gradientColor
         {
             get => _gradientColor;
-            set { _gradientColor = value; SetVerticesDirty(); }
+            set { if (_gradientColor == value) return; _gradientColor = value; SetVerticesDirty(); }
         }
 
         public int gradientQuality
         {
             get => _gradientQuality;
-            set { _gradientQuality = Mathf.Clamp(value, 2, 20); SetVerticesDirty(); }
+            set { value = Mathf.Clamp(value, 2, 20); if (_gradientQuality == value) return; _gradientQuality = value; SetVerticesDirty(); }
         }
 
         public RadialMode radialMode
         {
             get => _radialMode;
-            set { _radialMode = value; SetVerticesDirty(); }
+            set { if (_radialMode == value) return; _radialMode = value; SetVerticesDirty(); }
         }
 
         public float gradientSize
         {
             get => _gradientSize;
-            set { _gradientSize = Mathf.Max(0.01f, value); SetVerticesDirty(); }
+            set { value = Mathf.Max(0.01f, value); if (Mathf.Approximately(_gradientSize, value)) return; _gradientSize = value; SetVerticesDirty(); }
         }
 
         public Gradient gradient
@@ -123,91 +123,91 @@ namespace PurrNet.UI
         public float gradientAngle
         {
             get => _gradientAngle;
-            set { _gradientAngle = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_gradientAngle, value)) return; _gradientAngle = value; SetVerticesDirty(); }
         }
 
         public bool noFill
         {
             get => _noFill;
-            set { _noFill = value; SetVerticesDirty(); }
+            set { if (_noFill == value) return; _noFill = value; SetVerticesDirty(); }
         }
 
         public float frameWidth
         {
             get => _frameWidth;
-            set { _frameWidth = Mathf.Max(0f, value); SetVerticesDirty(); }
+            set { value = Mathf.Max(0f, value); if (Mathf.Approximately(_frameWidth, value)) return; _frameWidth = value; SetVerticesDirty(); }
         }
 
         public FramePlacement framePlacement
         {
             get => _framePlacement;
-            set { _framePlacement = value; SetVerticesDirty(); }
+            set { if (_framePlacement == value) return; _framePlacement = value; SetVerticesDirty(); }
         }
 
         public float outlineSize
         {
             get => _outlineSize;
-            set { _outlineSize = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_outlineSize, value)) return; _outlineSize = value; SetVerticesDirty(); }
         }
 
         public Color outlineColor
         {
             get => _outlineColor;
-            set { _outlineColor = value; SetVerticesDirty(); }
+            set { if (_outlineColor == value) return; _outlineColor = value; SetVerticesDirty(); }
         }
 
         public float shadowSize
         {
             get => _shadowSize;
-            set { _shadowSize = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_shadowSize, value)) return; _shadowSize = value; SetVerticesDirty(); }
         }
 
         public float shadowBlur
         {
             get => _shadowBlur;
-            set { _shadowBlur = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_shadowBlur, value)) return; _shadowBlur = value; SetVerticesDirty(); }
         }
 
         public float shadowPower
         {
             get => _shadowPower;
-            set { _shadowPower = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_shadowPower, value)) return; _shadowPower = value; SetVerticesDirty(); }
         }
 
         public Color shadowColor
         {
             get => _shadowColor;
-            set { _shadowColor = value; SetVerticesDirty(); }
+            set { if (_shadowColor == value) return; _shadowColor = value; SetVerticesDirty(); }
         }
 
         public float embossSize
         {
             get => _embossSize;
-            set { _embossSize = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_embossSize, value)) return; _embossSize = value; SetVerticesDirty(); }
         }
 
         public float embossAngle
         {
             get => _embossAngle;
-            set { _embossAngle = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_embossAngle, value)) return; _embossAngle = value; SetVerticesDirty(); }
         }
 
         public float embossStrength
         {
             get => _embossStrength;
-            set { _embossStrength = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_embossStrength, value)) return; _embossStrength = value; SetVerticesDirty(); }
         }
 
         public Color embossHighlightColor
         {
             get => _embossHighlightColor;
-            set { _embossHighlightColor = value; SetVerticesDirty(); }
+            set { if (_embossHighlightColor == value) return; _embossHighlightColor = value; SetVerticesDirty(); }
         }
 
         public Color embossShadowColor
         {
             get => _embossShadowColor;
-            set { _embossShadowColor = value; SetVerticesDirty(); }
+            set { if (_embossShadowColor == value) return; _embossShadowColor = value; SetVerticesDirty(); }
         }
 
         float FrameOutwardExtension
@@ -540,8 +540,6 @@ namespace PurrNet.UI
                 case 4: embossHighlightColor = color; break;
                 case 5: embossShadowColor = color; break;
             }
-
-            SetVerticesDirty();
         }
     }
 }

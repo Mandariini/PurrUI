@@ -16,19 +16,19 @@ namespace PurrNet.UI
         public bool useMaxRoundness
         {
             get => _useMaxRoundness;
-            set { _useMaxRoundness = value; SetVerticesDirty(); }
+            set { if (_useMaxRoundness == value) return; _useMaxRoundness = value; SetVerticesDirty(); }
         }
 
         public bool uniformRoundness
         {
             get => _uniformRoundness;
-            set { _uniformRoundness = value; SetVerticesDirty(); }
+            set { if (_uniformRoundness == value) return; _uniformRoundness = value; SetVerticesDirty(); }
         }
 
         public Vector4 roundnessInPixels
         {
             get => _roundnessInPixels;
-            set { _roundnessInPixels = value; SetVerticesDirty(); }
+            set { if (_roundnessInPixels == value) return; _roundnessInPixels = value; SetVerticesDirty(); }
         }
 
         protected override Vector4 GetRoundness()

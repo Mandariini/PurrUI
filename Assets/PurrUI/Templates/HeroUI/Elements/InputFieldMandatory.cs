@@ -51,6 +51,7 @@ namespace PurrNet.UI.HeroUI
         {
             float lerp = Mathf.Clamp01(_shouldErrorTimer / _transitionDuration);
             lerp = _transitionCurve.Evaluate(lerp);
+            _shouldErrorTimer += Time.deltaTime;
 
             if (Mathf.Approximately(lerp, _lastLerp))
                 return;
@@ -74,7 +75,6 @@ namespace PurrNet.UI.HeroUI
             }
 
             _lastLerp = lerp;
-            _shouldErrorTimer += Time.deltaTime;
         }
 
         private void OnValueUpdated(string newVal)

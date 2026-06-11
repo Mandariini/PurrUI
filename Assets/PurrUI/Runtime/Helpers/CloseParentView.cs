@@ -34,7 +34,8 @@ namespace PurrNet.UI
             var view = GetComponentInParent<MonoView>();
             if (view && view.parentStack)
             {
-                _closeSound.Play();
+                if (_closeSound)
+                    _closeSound.Play();
                 view.CloseMe();
             }
         }
@@ -46,15 +47,22 @@ namespace PurrNet.UI
             if (!_canClose)
                 return;
 
+            var view = GetComponentInParent<MonoView>();
+
             Close();
 
-            if (_passThrough)
+            if (_passThrough && EventSystem.current)
             {
                 EventSystem.current.RaycastAll(eventData, _results);
 
-                for (var i = 0; i < _results.Count;)
+                for (var i = 0; i < _results.Count; i++)
                 {
-                    ExecuteEvents.ExecuteHierarchy(_results[i].gameObject, eventData,
+                    var hit = _results[i].gameObject;
+
+                    if (view && hit.transform.IsChildOf(view.transform))
+                        continue;
+
+                    ExecuteEvents.ExecuteHierarchy(hit, eventData,
                         ExecuteEvents.pointerClickHandler);
                     break;
                 }

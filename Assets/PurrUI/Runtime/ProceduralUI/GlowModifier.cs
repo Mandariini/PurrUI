@@ -46,49 +46,49 @@ namespace PurrNet.UI
         public Vector2 offset
         {
             get => _offset;
-            set { _offset = value; SetDirty(); }
+            set { if (_offset == value) return; _offset = value; SetDirty(); }
         }
 
         public float extraSize
         {
             get => _extraSize;
-            set { _extraSize = value; SetDirty(); }
+            set { if (Mathf.Approximately(_extraSize, value)) return; _extraSize = value; SetDirty(); }
         }
 
         public Color glowColor
         {
             get => _glowColor;
-            set { _glowColor = value; SetDirty(); }
+            set { if (_glowColor == value) return; _glowColor = value; SetDirty(); }
         }
 
         public GradientType glowGradientType
         {
             get => _glowGradientType;
-            set { _glowGradientType = value; SetDirty(); }
+            set { if (_glowGradientType == value) return; _glowGradientType = value; SetDirty(); }
         }
 
         public Color glowGradientColor
         {
             get => _glowGradientColor;
-            set { _glowGradientColor = value; SetDirty(); }
+            set { if (_glowGradientColor == value) return; _glowGradientColor = value; SetDirty(); }
         }
 
         public int glowGradientQuality
         {
             get => _glowGradientQuality;
-            set { _glowGradientQuality = Mathf.Clamp(value, 2, 20); SetDirty(); }
+            set { value = Mathf.Clamp(value, 2, 20); if (_glowGradientQuality == value) return; _glowGradientQuality = value; SetDirty(); }
         }
 
         public RadialMode glowRadialMode
         {
             get => _glowRadialMode;
-            set { _glowRadialMode = value; SetDirty(); }
+            set { if (_glowRadialMode == value) return; _glowRadialMode = value; SetDirty(); }
         }
 
         public float glowGradientSize
         {
             get => _glowGradientSize;
-            set { _glowGradientSize = Mathf.Max(0.01f, value); SetDirty(); }
+            set { value = Mathf.Max(0.01f, value); if (Mathf.Approximately(_glowGradientSize, value)) return; _glowGradientSize = value; SetDirty(); }
         }
 
         public Gradient glowGradient
@@ -100,61 +100,61 @@ namespace PurrNet.UI
         public float glowGradientAngle
         {
             get => _glowGradientAngle;
-            set { _glowGradientAngle = value; SetDirty(); }
+            set { if (Mathf.Approximately(_glowGradientAngle, value)) return; _glowGradientAngle = value; SetDirty(); }
         }
 
         public float spread
         {
             get => _spread;
-            set { _spread = Mathf.Max(0f, value); SetDirty(); }
+            set { value = Mathf.Max(0f, value); if (Mathf.Approximately(_spread, value)) return; _spread = value; SetDirty(); }
         }
 
         public float blur
         {
             get => _blur;
-            set { _blur = Mathf.Max(0f, value); SetDirty(); }
+            set { value = Mathf.Max(0f, value); if (Mathf.Approximately(_blur, value)) return; _blur = value; SetDirty(); }
         }
 
         public float power
         {
             get => _power;
-            set { _power = Mathf.Max(0.01f, value); SetDirty(); }
+            set { value = Mathf.Max(0.01f, value); if (Mathf.Approximately(_power, value)) return; _power = value; SetDirty(); }
         }
 
         public bool noFill
         {
             get => _noFill;
-            set { _noFill = value; SetDirty(); }
+            set { if (_noFill == value) return; _noFill = value; SetDirty(); }
         }
 
         public float frameWidth
         {
             get => _frameWidth;
-            set { _frameWidth = Mathf.Max(0f, value); SetDirty(); }
+            set { value = Mathf.Max(0f, value); if (Mathf.Approximately(_frameWidth, value)) return; _frameWidth = value; SetDirty(); }
         }
 
         public FramePlacement framePlacement
         {
             get => _framePlacement;
-            set { _framePlacement = value; SetDirty(); }
+            set { if (_framePlacement == value) return; _framePlacement = value; SetDirty(); }
         }
 
         public bool useMaxRoundness
         {
             get => _useMaxRoundness;
-            set { _useMaxRoundness = value; SetDirty(); }
+            set { if (_useMaxRoundness == value) return; _useMaxRoundness = value; SetDirty(); }
         }
 
         public bool uniformRoundness
         {
             get => _uniformRoundness;
-            set { _uniformRoundness = value; SetDirty(); }
+            set { if (_uniformRoundness == value) return; _uniformRoundness = value; SetDirty(); }
         }
 
         public Vector4 roundnessInPixels
         {
             get => _roundnessInPixels;
-            set { _roundnessInPixels = value; SetDirty(); }
+            set { if (_roundnessInPixels == value) return; _roundnessInPixels = value; SetDirty(); }
         }
 
         void OnEnable()

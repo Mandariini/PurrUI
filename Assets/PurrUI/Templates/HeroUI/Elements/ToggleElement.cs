@@ -70,6 +70,9 @@ namespace PurrNet.UI.HeroUI
 
         private void Update()
         {
+            if (!_background || !_nob)
+                return;
+
             float lerp = Mathf.Clamp01(_timeSinceToggle / _transitionDuration);
             lerp = _transitionCurve.Evaluate(lerp);
 

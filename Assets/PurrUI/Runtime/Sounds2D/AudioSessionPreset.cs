@@ -11,15 +11,9 @@ namespace PurrNet.UI
 
         public void Play()
         {
-            float middleVolume = (volume.x + volume.y) / 2f;
-            float middlePitch = (pitch.x + pitch.y) / 2f;
-
-            float volumeRange = volume.y - volume.x;
-            float pitchRange = pitch.y - pitch.x;
-
             var session = new AudioSession(clips)
-                .WithVolume(middleVolume, volumeRange)
-                .WithPitch(middlePitch, pitchRange);
+                .WithVolume(Random.Range(volume.x, volume.y))
+                .WithPitch(Random.Range(pitch.x, pitch.y));
 
             Sounds2D.Play(session);
         }

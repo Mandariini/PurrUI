@@ -20,7 +20,29 @@ namespace PurrNet.UI
 
         public MonoView top => _stack.Count > 0 ? _stack[^1] : null;
 
+        /// <summary>
+        /// Number of views currently in the stack.
+        /// </summary>
+        public int count => _stack.Count;
+
+        /// <summary>
+        /// Read-only access to the views currently in the stack, ordered bottom to top.
+        /// </summary>
+        public IReadOnlyList<MonoView> views => _stack;
+
+        /// <summary>
+        /// Raised after a view has been instantiated, pushed onto the stack and initialized.
+        /// </summary>
+        public event Action<MonoView> onViewPushed;
+
+        /// <summary>
+        /// Raised after a view has been removed from the stack, before its exit transition completes.
+        /// </summary>
+        public event Action<MonoView> onViewPopped;
+
         public event Action onColorChange;
+
+        private ColorPalette _subscribedPalette;
 
         public ColorPalette palette
         {
@@ -30,19 +52,31 @@ namespace PurrNet.UI
             }
             set
             {
-                var old = _colorPalette;
-                if (old)
-                    old.onChange -= OnColorPaletteDirty;
+                if (_colorPalette == value)
+                    return;
                 _colorPalette = value;
+                SubscribeToPalette();
                 onColorChange?.Invoke();
-                _colorPalette.onChange += OnColorPaletteDirty;
             }
         }
 
         private void Awake()
         {
-            if (_colorPalette)
-                _colorPalette.onChange += OnColorPaletteDirty;
+            SubscribeToPalette();
+        }
+
+        private void SubscribeToPalette()
+        {
+            if (_subscribedPalette == _colorPalette)
+                return;
+
+            if (_subscribedPalette)
+                _subscribedPalette.onChange -= OnColorPaletteDirty;
+
+            _subscribedPalette = _colorPalette;
+
+            if (_subscribedPalette)
+                _subscribedPalette.onChange += OnColorPaletteDirty;
         }
 
         private void OnColorPaletteDirty()
@@ -68,6 +102,9 @@ namespace PurrNet.UI
                     _prefabCollections.Add(_prefabs);
                 _prefabs = null;
             }
+
+            SubscribeToPalette();
+            onColorChange?.Invoke();
         }
 #pragma warning restore CS0612 // Type or member is obsolete
 #endif
@@ -196,6 +233,16 @@ namespace PurrNet.UI
             }
         }
 
+        private void StopViewCoroutines(MonoView view)
+        {
+            if (_cullCoroutines.TryGetValue(view, out var coroutine))
+            {
+                StopCoroutine(coroutine);
+                _cullCoroutines.Remove(view);
+            }
+            StopUncullTransition(view);
+        }
+
         private void ApplyCulling(bool instant)
         {
             for (int i = _stack.Count - 1; i >= 0; i--)
@@ -290,11 +337,30 @@ namespace PurrNet.UI
         /// </summary>
         public void Clear()
         {
+            bool canAnimate = Application.isPlaying && isActiveAndEnabled;
+
             for (int i = _stack.Count - 1; i >= 0; i--)
             {
                 var view = _stack[i];
+                if (!view)
+                    continue;
+
+                StopViewCoroutines(view);
                 view.OnPopped();
                 view.parentStack = null;
+                onViewPopped?.Invoke(view);
+
+                var transition = canAnimate ? view.ExitTransition() : null;
+                if (transition != null)
+                {
+                    view.canvasGroup.interactable = false;
+                    view.canvasGroup.blocksRaycasts = false;
+                    StartCoroutine(RunExitTransition(view, transition));
+                }
+                else
+                {
+                    view.DestroyMe();
+                }
             }
             _stack.Clear();
         }
@@ -323,20 +389,7 @@ namespace PurrNet.UI
                 return;
             }
 
-            _stack.RemoveAt(idx);
-            instance.OnPopped();
-            instance.parentStack = null;
-
-            var transition = instance.ExitTransition();
-            if (transition != null)
-            {
-                instance.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunExitTransition(instance, transition));
-            }
-            else
-            {
-                instance.DestroyMe();
-            }
+            RemoveFromStack(idx);
 
             UpdateOrder(idx);
             UpdateVisibility();
@@ -409,20 +462,7 @@ namespace PurrNet.UI
                 return Replace(prefab);
 
             // Remove the instance at its position
-            _stack.RemoveAt(idx);
-            instance.OnPopped();
-            instance.parentStack = null;
-
-            var exitTransition = instance.ExitTransition();
-            if (exitTransition != null)
-            {
-                instance.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunExitTransition(instance, exitTransition));
-            }
-            else
-            {
-                instance.DestroyMe();
-            }
+            RemoveFromStack(idx);
 
             // Insert new instance at the same position
             return InsertIntoStack(prefab, idx);
@@ -587,21 +627,28 @@ namespace PurrNet.UI
 
         private void RemoveTop()
         {
-            var topView = _stack[^1];
-            _stack.RemoveAt(_stack.Count - 1);
-            topView.OnPopped();
-            topView.parentStack = null;
+            RemoveFromStack(_stack.Count - 1);
+        }
 
-            var transition = topView.ExitTransition();
+        private void RemoveFromStack(int idx)
+        {
+            var view = _stack[idx];
+            _stack.RemoveAt(idx);
+            StopViewCoroutines(view);
+            view.OnPopped();
+            view.parentStack = null;
+            onViewPopped?.Invoke(view);
+
+            var transition = view.ExitTransition();
             if (transition != null)
             {
-                topView.canvasGroup.interactable = false;
-                topView.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunExitTransition(topView, transition));
+                view.canvasGroup.interactable = false;
+                view.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(view, transition));
             }
             else
             {
-                topView.DestroyMe();
+                view.DestroyMe();
             }
         }
 
@@ -617,6 +664,7 @@ namespace PurrNet.UI
             instance.Initialize(this);
             UpdateOrder(idx);
             instance.OnPushed();
+            onViewPushed?.Invoke(instance);
 
             var transition = instance.EnterTransition();
             if (transition != null)
@@ -653,8 +701,11 @@ namespace PurrNet.UI
 
         private void OnDestroy()
         {
-            if (_colorPalette)
-                _colorPalette.onChange -= OnColorPaletteDirty;
+            if (_subscribedPalette)
+            {
+                _subscribedPalette.onChange -= OnColorPaletteDirty;
+                _subscribedPalette = null;
+            }
             Clear();
         }
     }

@@ -57,67 +57,67 @@ namespace PurrNet.UI
         public RectangleGraphic source
         {
             get => _source;
-            set { _source = value; TrackSource(); SetVerticesDirty(); }
+            set { if (_source == value) { TrackSource(); return; } _source = value; TrackSource(); SetVerticesDirty(); }
         }
 
         public float extraSize
         {
             get => _extraSize;
-            set { _extraSize = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_extraSize, value)) return; _extraSize = value; SetVerticesDirty(); }
         }
 
         public bool useMaxRoundness
         {
             get => _useMaxRoundness;
-            set { _useMaxRoundness = value; SetVerticesDirty(); }
+            set { if (_useMaxRoundness == value) return; _useMaxRoundness = value; SetVerticesDirty(); }
         }
 
         public bool uniformRoundness
         {
             get => _uniformRoundness;
-            set { _uniformRoundness = value; SetVerticesDirty(); }
+            set { if (_uniformRoundness == value) return; _uniformRoundness = value; SetVerticesDirty(); }
         }
 
         public Vector4 roundnessInPixels
         {
             get => _roundnessInPixels;
-            set { _roundnessInPixels = value; SetVerticesDirty(); }
+            set { if (_roundnessInPixels == value) return; _roundnessInPixels = value; SetVerticesDirty(); }
         }
 
         public Color glowColor
         {
             get => _glowColor;
-            set { _glowColor = value; SetVerticesDirty(); }
+            set { if (_glowColor == value) return; _glowColor = value; SetVerticesDirty(); }
         }
 
         public GradientType glowGradientType
         {
             get => _glowGradientType;
-            set { _glowGradientType = value; SetVerticesDirty(); }
+            set { if (_glowGradientType == value) return; _glowGradientType = value; SetVerticesDirty(); }
         }
 
         public Color glowGradientColor
         {
             get => _glowGradientColor;
-            set { _glowGradientColor = value; SetVerticesDirty(); }
+            set { if (_glowGradientColor == value) return; _glowGradientColor = value; SetVerticesDirty(); }
         }
 
         public int glowGradientQuality
         {
             get => _glowGradientQuality;
-            set { _glowGradientQuality = Mathf.Clamp(value, 2, 20); SetVerticesDirty(); }
+            set { value = Mathf.Clamp(value, 2, 20); if (_glowGradientQuality == value) return; _glowGradientQuality = value; SetVerticesDirty(); }
         }
 
         public RadialMode glowRadialMode
         {
             get => _glowRadialMode;
-            set { _glowRadialMode = value; SetVerticesDirty(); }
+            set { if (_glowRadialMode == value) return; _glowRadialMode = value; SetVerticesDirty(); }
         }
 
         public float glowGradientSize
         {
             get => _glowGradientSize;
-            set { _glowGradientSize = Mathf.Max(0.01f, value); SetVerticesDirty(); }
+            set { value = Mathf.Max(0.01f, value); if (Mathf.Approximately(_glowGradientSize, value)) return; _glowGradientSize = value; SetVerticesDirty(); }
         }
 
         public Gradient glowGradient
@@ -129,25 +129,25 @@ namespace PurrNet.UI
         public float glowGradientAngle
         {
             get => _glowGradientAngle;
-            set { _glowGradientAngle = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_glowGradientAngle, value)) return; _glowGradientAngle = value; SetVerticesDirty(); }
         }
 
         public float spread
         {
             get => _spread;
-            set { _spread = Mathf.Max(0f, value); SetVerticesDirty(); }
+            set { value = Mathf.Max(0f, value); if (Mathf.Approximately(_spread, value)) return; _spread = value; SetVerticesDirty(); }
         }
 
         public float blur
         {
             get => _blur;
-            set { _blur = Mathf.Max(0f, value); SetVerticesDirty(); }
+            set { value = Mathf.Max(0f, value); if (Mathf.Approximately(_blur, value)) return; _blur = value; SetVerticesDirty(); }
         }
 
         public float power
         {
             get => _power;
-            set { _power = Mathf.Max(0.01f, value); SetVerticesDirty(); }
+            set { value = Mathf.Max(0.01f, value); if (Mathf.Approximately(_power, value)) return; _power = value; SetVerticesDirty(); }
         }
 
         RectangleGraphic _trackedSource;
