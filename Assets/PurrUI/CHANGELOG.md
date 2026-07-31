@@ -1,3 +1,22 @@
+# [1.5.0](https://github.com/PurrNet/PurrUI/compare/v1.4.0...v1.5.0) (2026-07-31)
+
+
+### Bug Fixes
+
+* adding some helper functions ([68b80c0](https://github.com/PurrNet/PurrUI/commit/68b80c05bb9db70d4c8a944aa957d74b32fa74e4))
+* bugs reported bu users ([fb17e2e](https://github.com/PurrNet/PurrUI/commit/fb17e2e0e6d67736acbd6fbe0e3372c440ff48ad))
+* check for null in ClickSounds.cs ([4d3239b](https://github.com/PurrNet/PurrUI/commit/4d3239b9c9b385e815e5f67675d746b3267b8b46))
+* editor ([ca5353b](https://github.com/PurrNet/PurrUI/commit/ca5353b8aee33e96a2c08876fb7ac8adeac102a0))
+* ignore glow grapgics for layouts ([6e88652](https://github.com/PurrNet/PurrUI/commit/6e88652b7124216abb9d2c0eb0d47c8f8f4cf0e5))
+* improve palette provider handling in ColoredGraphic ([9c91ba1](https://github.com/PurrNet/PurrUI/commit/9c91ba1910a7a96c6233dab6f7ed0c0245a9e1d2))
+* refactoring, completness, optimisations, tests ([efc89a4](https://github.com/PurrNet/PurrUI/commit/efc89a44f13acd6339979b183ba7f0c4db9c5892))
+
+
+### Features
+
+* color palette fun little preview of the mashup ([7209077](https://github.com/PurrNet/PurrUI/commit/7209077e2c30eed39465635169e1530629dbb696))
+* palette theming system with transition-based ColoredGraphic ([b7f0642](https://github.com/PurrNet/PurrUI/commit/b7f0642e0e47cd1e6efa8a5433a84b004a97baea))
+
 # [1.5.0-beta.9](https://github.com/PurrNet/PurrUI/compare/v1.5.0-beta.8...v1.5.0-beta.9) (2026-06-11)
 
 
