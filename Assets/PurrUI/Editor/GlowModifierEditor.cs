@@ -141,7 +141,15 @@ namespace PurrNet.Editor.UI
                 EndSection();
             }
 
-            serializedObject.ApplyModifiedProperties();
+            if (serializedObject.ApplyModifiedProperties())
+            {
+                foreach (var obj in targets)
+                {
+                    if (obj is not GlowModifier glowModifier) continue;
+                    glowModifier.Refresh();
+                    EditorUtility.SetDirty(glowModifier);
+                }
+            }
         }
 
         static GUIStyle _sectionStyle;

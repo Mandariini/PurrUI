@@ -27,7 +27,7 @@ namespace PurrNet.UI
     }
 
     [RequireComponent(typeof(CanvasRenderer))]
-    public class SignedDistanceFieldGraphic : MaskableGraphic
+    public class SignedDistanceFieldGraphic : MaskableGraphic, IColored
     {
         const string SHADER_NAME = "Hidden/PurrUI/RectangleRenderer";
 
@@ -62,47 +62,56 @@ namespace PurrNet.UI
         [SerializeField] Color _embossShadowColor = Color.black;
 
         static Material _sharedMaterial;
+        public const AdditionalCanvasShaderChannels RequiredCanvasChannels =
+            AdditionalCanvasShaderChannels.TexCoord1
+            | AdditionalCanvasShaderChannels.TexCoord2
+            | AdditionalCanvasShaderChannels.TexCoord3
+            | AdditionalCanvasShaderChannels.Normal
+            | AdditionalCanvasShaderChannels.Tangent;
+#if UNITY_EDITOR
+        bool _editorRebuildQueued;
+#endif
 
         public Texture texture
         {
             get => _texture;
-            set { _texture = value; SetVerticesDirty(); SetMaterialDirty(); }
+            set { if (_texture == value) return; _texture = value; SetVerticesDirty(); SetMaterialDirty(); }
         }
 
         public Color graphicColor
         {
             get => _graphicColor;
-            set { _graphicColor = value; SetVerticesDirty(); }
+            set { if (_graphicColor == value) return; _graphicColor = value; SetVerticesDirty(); }
         }
 
         public GradientType gradientType
         {
             get => _gradientType;
-            set { _gradientType = value; SetVerticesDirty(); }
+            set { if (_gradientType == value) return; _gradientType = value; SetVerticesDirty(); }
         }
 
         public Color gradientColor
         {
             get => _gradientColor;
-            set { _gradientColor = value; SetVerticesDirty(); }
+            set { if (_gradientColor == value) return; _gradientColor = value; SetVerticesDirty(); }
         }
 
         public int gradientQuality
         {
             get => _gradientQuality;
-            set { _gradientQuality = Mathf.Clamp(value, 2, 20); SetVerticesDirty(); }
+            set { value = Mathf.Clamp(value, 2, 20); if (_gradientQuality == value) return; _gradientQuality = value; SetVerticesDirty(); }
         }
 
         public RadialMode radialMode
         {
             get => _radialMode;
-            set { _radialMode = value; SetVerticesDirty(); }
+            set { if (_radialMode == value) return; _radialMode = value; SetVerticesDirty(); }
         }
 
         public float gradientSize
         {
             get => _gradientSize;
-            set { _gradientSize = Mathf.Max(0.01f, value); SetVerticesDirty(); }
+            set { value = Mathf.Max(0.01f, value); if (Mathf.Approximately(_gradientSize, value)) return; _gradientSize = value; SetVerticesDirty(); }
         }
 
         public Gradient gradient
@@ -114,91 +123,91 @@ namespace PurrNet.UI
         public float gradientAngle
         {
             get => _gradientAngle;
-            set { _gradientAngle = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_gradientAngle, value)) return; _gradientAngle = value; SetVerticesDirty(); }
         }
 
         public bool noFill
         {
             get => _noFill;
-            set { _noFill = value; SetVerticesDirty(); }
+            set { if (_noFill == value) return; _noFill = value; SetVerticesDirty(); }
         }
 
         public float frameWidth
         {
             get => _frameWidth;
-            set { _frameWidth = Mathf.Max(0f, value); SetVerticesDirty(); }
+            set { value = Mathf.Max(0f, value); if (Mathf.Approximately(_frameWidth, value)) return; _frameWidth = value; SetVerticesDirty(); }
         }
 
         public FramePlacement framePlacement
         {
             get => _framePlacement;
-            set { _framePlacement = value; SetVerticesDirty(); }
+            set { if (_framePlacement == value) return; _framePlacement = value; SetVerticesDirty(); }
         }
 
         public float outlineSize
         {
             get => _outlineSize;
-            set { _outlineSize = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_outlineSize, value)) return; _outlineSize = value; SetVerticesDirty(); }
         }
 
         public Color outlineColor
         {
             get => _outlineColor;
-            set { _outlineColor = value; SetVerticesDirty(); }
+            set { if (_outlineColor == value) return; _outlineColor = value; SetVerticesDirty(); }
         }
 
         public float shadowSize
         {
             get => _shadowSize;
-            set { _shadowSize = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_shadowSize, value)) return; _shadowSize = value; SetVerticesDirty(); }
         }
 
         public float shadowBlur
         {
             get => _shadowBlur;
-            set { _shadowBlur = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_shadowBlur, value)) return; _shadowBlur = value; SetVerticesDirty(); }
         }
 
         public float shadowPower
         {
             get => _shadowPower;
-            set { _shadowPower = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_shadowPower, value)) return; _shadowPower = value; SetVerticesDirty(); }
         }
 
         public Color shadowColor
         {
             get => _shadowColor;
-            set { _shadowColor = value; SetVerticesDirty(); }
+            set { if (_shadowColor == value) return; _shadowColor = value; SetVerticesDirty(); }
         }
 
         public float embossSize
         {
             get => _embossSize;
-            set { _embossSize = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_embossSize, value)) return; _embossSize = value; SetVerticesDirty(); }
         }
 
         public float embossAngle
         {
             get => _embossAngle;
-            set { _embossAngle = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_embossAngle, value)) return; _embossAngle = value; SetVerticesDirty(); }
         }
 
         public float embossStrength
         {
             get => _embossStrength;
-            set { _embossStrength = value; SetVerticesDirty(); }
+            set { if (Mathf.Approximately(_embossStrength, value)) return; _embossStrength = value; SetVerticesDirty(); }
         }
 
         public Color embossHighlightColor
         {
             get => _embossHighlightColor;
-            set { _embossHighlightColor = value; SetVerticesDirty(); }
+            set { if (_embossHighlightColor == value) return; _embossHighlightColor = value; SetVerticesDirty(); }
         }
 
         public Color embossShadowColor
         {
             get => _embossShadowColor;
-            set { _embossShadowColor = value; SetVerticesDirty(); }
+            set { if (_embossShadowColor == value) return; _embossShadowColor = value; SetVerticesDirty(); }
         }
 
         float FrameOutwardExtension
@@ -229,8 +238,32 @@ namespace PurrNet.UI
 
         protected override void OnEnable()
         {
-            EnsureAdditionalCanvasChannels();
             base.OnEnable();
+            Refresh();
+        }
+
+        protected override void OnCanvasHierarchyChanged()
+        {
+            base.OnCanvasHierarchyChanged();
+            Refresh();
+        }
+
+        protected override void OnRectTransformDimensionsChange()
+        {
+            base.OnRectTransformDimensionsChange();
+            Refresh();
+        }
+
+        protected override void OnTransformParentChanged()
+        {
+            base.OnTransformParentChanged();
+            Refresh();
+        }
+
+        protected override void OnDidApplyAnimationProperties()
+        {
+            base.OnDidApplyAnimationProperties();
+            Refresh();
         }
 
 #if UNITY_EDITOR
@@ -245,8 +278,38 @@ namespace PurrNet.UI
         {
             if (!_shader)
                 _shader = Shader.Find(SHADER_NAME);
-            EnsureAdditionalCanvasChannels();
             base.OnValidate();
+            Refresh();
+        }
+#endif
+
+        public void Refresh()
+        {
+            EnsureAdditionalCanvasChannels();
+            SetAllDirty();
+#if UNITY_EDITOR
+            QueueEditorRebuild();
+#endif
+        }
+
+#if UNITY_EDITOR
+        void QueueEditorRebuild()
+        {
+            if (Application.isPlaying || _editorRebuildQueued)
+                return;
+
+            _editorRebuildQueued = true;
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                _editorRebuildQueued = false;
+                if (!this || !isActiveAndEnabled) return;
+
+                EnsureAdditionalCanvasChannels();
+                SetAllDirty();
+                Canvas.ForceUpdateCanvases();
+                UnityEditor.SceneView.RepaintAll();
+            };
         }
 #endif
 
@@ -254,14 +317,7 @@ namespace PurrNet.UI
         {
             if (!canvas) return;
             var rootCanvas = canvas.rootCanvas;
-
-            const AdditionalCanvasShaderChannels required = AdditionalCanvasShaderChannels.TexCoord1
-                                                            | AdditionalCanvasShaderChannels.TexCoord2
-                                                            | AdditionalCanvasShaderChannels.TexCoord3
-                                                            | AdditionalCanvasShaderChannels.Normal
-                                                            | AdditionalCanvasShaderChannels.Tangent;
-
-            rootCanvas.additionalShaderChannels |= required;
+            rootCanvas.additionalShaderChannels |= RequiredCanvasChannels;
         }
 
         protected virtual Vector4 GetRoundness()
@@ -459,6 +515,30 @@ namespace PurrNet.UI
                     vh.AddTriangle(i, i + cols, i + cols + 1);
                     vh.AddTriangle(i + cols + 1, i + 1, i);
                 }
+            }
+        }
+
+        private static readonly string[] _keys = {
+            "Graphic",
+            "Gradient",
+            "Outline",
+            "Shadow",
+            "Emboss Highlight",
+            "Emboss Shadow"
+        };
+
+        public string[] keys => _keys;
+
+        public void SetColor(int keyIndex, Color color)
+        {
+            switch (keyIndex)
+            {
+                case 0: graphicColor = color; break;
+                case 1: gradientColor = color; break;
+                case 2: outlineColor = color; break;
+                case 3: shadowColor = color; break;
+                case 4: embossHighlightColor = color; break;
+                case 5: embossShadowColor = color; break;
             }
         }
     }

@@ -11,6 +11,7 @@ A Unity UI framework by the PurrNet team featuring procedural UI rendering, view
 - **Procedural UI** - SDF-based rendering with `RectangleGraphic` and `GlowGraphic` (for glow/shadows)
 - **Material Icons** - Simple to use material icon support for textmeshpro
 - **View Management** - `ViewStack` and `ViewCollection` for managing UI views with transition support
+- **Color Palette** - Theme your UI from a single asset; `ColoredGraphic` applies slots to any graphic with smooth transitions
 - **Sounds2D** - Lightweight 2D audio system with a fluent API for fire-and-forget sound effects
 
 ## Installation
@@ -249,6 +250,58 @@ protected override IEnumerator OnExitTransition()
 - **Raycasts**: Only the top view receives raycasts. Views below the top have raycasts disabled.
 - **Cull Windows Behind**: If a view has `cullWindowsBehind` enabled, all views below it in the stack have their `Canvas` disabled entirely. Useful for fullscreen views where nothing behind them is visible.
 - **OnBecomeForeground**: Override this virtual method in your `MonoView` subclass to react when the view returns to the top of the stack (e.g., after the view above it is popped).
+
+# Color Palette
+
+A theming system for UI. Define a `ColorPalette` once, drive any `Graphic` from it with `ColoredGraphic`, and cascade the palette down the hierarchy through `IPaletteProvider`. Changes propagate live, with optional smooth transitions between colors.
+
+## ColorPalette
+
+Right-click in your Project window and select **Create > PurrNet > PurrUI > Color Palette**. The asset exposes nine slots grouped into **Base** (`Black`, `White`, `Muted`), **Backgrounds** (`Background`, `Surface`), **Primary** (`Accent`), and **Status** (`Success`, `Warning`, `Danger`). Each slot (except Base) also has a dedicated contrast color - the foreground used for text or content rendered on top of it.
+
+Color Palette Scriptable Object:
+<img width="402" height="739" alt="image" src="https://github.com/user-attachments/assets/364494b0-a5d9-4978-abc5-b9100ddd65a1" />
+
+The inspector includes a live mock-UI preview built from rectangles so you can see how the slots land together as you tweak them - useful for catching low-contrast pairings at a glance.
+
+## ColoredGraphic
+
+Add a `ColoredGraphic` next to any `UI.Graphic` (`Image`, `RawImage`, `TMP_Text`, etc.) to drive its color from the active palette.
+
+Colored Graphic Component:
+<img width="402" height="318" alt="image" src="https://github.com/user-attachments/assets/103486d4-2121-4bb3-8676-06183b564c99" />
+
+Pick a slot via the dropdown. Toggle **Contrast** to use that slot's paired foreground instead (e.g. `Accent` with contrast on = the accent foreground color).
+
+For multi-colored targets - components implementing `IColored` - the inspector lists one row per named key with its index (`[0] Background`, `[1] Text`, etc.). Each row has an enable checkbox so you opt in only to the slots you want to override; untouched slots keep whatever color the target already had.
+
+### Transitions
+
+`ColoredGraphic` has a `Transition Duration` field. Any palette change - either editing the asset or calling the runtime API - smoothly lerps from the current color to the new target. Set to `0` to snap. Edit-mode changes always snap (for a stable editor preview without needing continuous repaints).
+
+### Runtime API
+
+```csharp
+// Single-graphic target
+coloredGraphic.SetColor(new ColorInfo { enabled = true, color = ColorType.Accent });
+
+// Specific slot on an IColored target
+coloredGraphic.SetColor(1, new ColorInfo { enabled = true, color = ColorType.Background, contrast = true });
+
+// Tweak the blend duration at runtime
+coloredGraphic.transitionDuration = 0.25f;
+```
+
+Your own state machine (hover/pressed/etc.) can push new `ColorInfo`s and the transition system handles the visual blend.
+
+## Providers
+
+`ColoredGraphic` walks up the hierarchy via `GetComponentInParent<IPaletteProvider>()` to find the active palette:
+
+- `ViewStack` already implements `IPaletteProvider` - the palette you configure on it cascades into every view pushed onto the stack.
+- Drop a `PaletteProvider` component on any child GameObject to override the palette for that subtree (e.g., a "dark card" inside an otherwise-light scene).
+
+The closest provider wins, so nested providers work naturally for scoped theme overrides.
 
 # Sounds2D
 

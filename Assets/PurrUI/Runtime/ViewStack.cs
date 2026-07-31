@@ -5,11 +5,12 @@ using UnityEngine;
 
 namespace PurrNet.UI
 {
-    public class ViewStack : MonoBehaviour
+    public class ViewStack : MonoBehaviour, IPaletteProvider
     {
         [SerializeField] private Transform _parent;
         [SerializeField, HideInInspector, Obsolete] private ViewCollection _prefabs;
         [SerializeField] private List<ViewCollection> _prefabCollections;
+        [SerializeField] private ColorPalette _colorPalette;
         [SerializeField] private MonoView _pushOnStart;
         [SerializeField] private int _orderOffset;
 
@@ -18,6 +19,70 @@ namespace PurrNet.UI
         private readonly Dictionary<MonoView, Coroutine> _uncullCoroutines = new();
 
         public MonoView top => _stack.Count > 0 ? _stack[^1] : null;
+
+        /// <summary>
+        /// Number of views currently in the stack.
+        /// </summary>
+        public int count => _stack.Count;
+
+        /// <summary>
+        /// Read-only access to the views currently in the stack, ordered bottom to top.
+        /// </summary>
+        public IReadOnlyList<MonoView> views => _stack;
+
+        /// <summary>
+        /// Raised after a view has been instantiated, pushed onto the stack and initialized.
+        /// </summary>
+        public event Action<MonoView> onViewPushed;
+
+        /// <summary>
+        /// Raised after a view has been removed from the stack, before its exit transition completes.
+        /// </summary>
+        public event Action<MonoView> onViewPopped;
+
+        public event Action onColorChange;
+
+        private ColorPalette _subscribedPalette;
+
+        public ColorPalette palette
+        {
+            get
+            {
+                return _colorPalette;
+            }
+            set
+            {
+                if (_colorPalette == value)
+                    return;
+                _colorPalette = value;
+                SubscribeToPalette();
+                onColorChange?.Invoke();
+            }
+        }
+
+        private void Awake()
+        {
+            SubscribeToPalette();
+        }
+
+        private void SubscribeToPalette()
+        {
+            if (_subscribedPalette == _colorPalette)
+                return;
+
+            if (_subscribedPalette)
+                _subscribedPalette.onChange -= OnColorPaletteDirty;
+
+            _subscribedPalette = _colorPalette;
+
+            if (_subscribedPalette)
+                _subscribedPalette.onChange += OnColorPaletteDirty;
+        }
+
+        private void OnColorPaletteDirty()
+        {
+            onColorChange?.Invoke();
+        }
 
         private void Start()
         {
@@ -37,6 +102,9 @@ namespace PurrNet.UI
                     _prefabCollections.Add(_prefabs);
                 _prefabs = null;
             }
+
+            SubscribeToPalette();
+            onColorChange?.Invoke();
         }
 #pragma warning restore CS0612 // Type or member is obsolete
 #endif
@@ -165,6 +233,16 @@ namespace PurrNet.UI
             }
         }
 
+        private void StopViewCoroutines(MonoView view)
+        {
+            if (_cullCoroutines.TryGetValue(view, out var coroutine))
+            {
+                StopCoroutine(coroutine);
+                _cullCoroutines.Remove(view);
+            }
+            StopUncullTransition(view);
+        }
+
         private void ApplyCulling(bool instant)
         {
             for (int i = _stack.Count - 1; i >= 0; i--)
@@ -259,11 +337,30 @@ namespace PurrNet.UI
         /// </summary>
         public void Clear()
         {
+            bool canAnimate = Application.isPlaying && isActiveAndEnabled;
+
             for (int i = _stack.Count - 1; i >= 0; i--)
             {
                 var view = _stack[i];
+                if (!view)
+                    continue;
+
+                StopViewCoroutines(view);
                 view.OnPopped();
                 view.parentStack = null;
+                onViewPopped?.Invoke(view);
+
+                var transition = canAnimate ? view.ExitTransition() : null;
+                if (transition != null)
+                {
+                    view.canvasGroup.interactable = false;
+                    view.canvasGroup.blocksRaycasts = false;
+                    StartCoroutine(RunExitTransition(view, transition));
+                }
+                else
+                {
+                    view.DestroyMe();
+                }
             }
             _stack.Clear();
         }
@@ -292,20 +389,7 @@ namespace PurrNet.UI
                 return;
             }
 
-            _stack.RemoveAt(idx);
-            instance.OnPopped();
-            instance.parentStack = null;
-
-            var transition = instance.ExitTransition();
-            if (transition != null)
-            {
-                instance.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunExitTransition(instance, transition));
-            }
-            else
-            {
-                instance.DestroyMe();
-            }
+            RemoveFromStack(idx);
 
             UpdateOrder(idx);
             UpdateVisibility();
@@ -378,20 +462,7 @@ namespace PurrNet.UI
                 return Replace(prefab);
 
             // Remove the instance at its position
-            _stack.RemoveAt(idx);
-            instance.OnPopped();
-            instance.parentStack = null;
-
-            var exitTransition = instance.ExitTransition();
-            if (exitTransition != null)
-            {
-                instance.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunExitTransition(instance, exitTransition));
-            }
-            else
-            {
-                instance.DestroyMe();
-            }
+            RemoveFromStack(idx);
 
             // Insert new instance at the same position
             return InsertIntoStack(prefab, idx);
@@ -455,58 +526,129 @@ namespace PurrNet.UI
         /// Moves the specified instance to the top of the stack. If the instance is not in the stack, does nothing.
         /// </summary>
         /// <param name="instance"></param>
-        public void MoveToTop(MonoView instance)
+        public bool MoveToTop(MonoView instance)
         {
             int idx = _stack.IndexOf(instance);
             if (idx == -1)
             {
                 Debug.LogError("[WindowStack] The provided window instance is not in the stack.", this);
-                return;
+                return false;
             }
 
             if (idx == _stack.Count - 1)
-                return;
+                return false;
 
             _stack.RemoveAt(idx);
             _stack.Add(instance);
             instance.transform.SetAsLastSibling();
             UpdateOrder(idx);
             UpdateVisibility();
+            return true;
+        }
+
+        public bool TryMoveToTop(MonoView instance)
+        {
+            int idx = _stack.IndexOf(instance);
+            if (idx == -1)
+                return false;
+
+            if (idx == _stack.Count - 1)
+                return false;
+
+            _stack.RemoveAt(idx);
+            _stack.Add(instance);
+            instance.transform.SetAsLastSibling();
+            UpdateOrder(idx);
+            UpdateVisibility();
+            return true;
         }
 
         /// <summary>
         /// Moves the first instance of the specified type to the top of the stack. If no instance of that type is found, does nothing.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public void MoveToTop<T>() where T : MonoView
+        public bool MoveToTop<T>() where T : MonoView
         {
             for (int i = 0; i < _stack.Count; i++)
             {
                 if (_stack[i] is T instance)
+                    return MoveToTop(instance);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Moves the first instance of the specified type to the top of the stack. If no instance of that type is found, does nothing.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public bool TryMoveToTop<T>() where T : MonoView
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                if (_stack[i] is T instance)
+                    return TryMoveToTop(instance);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the stack contains at least one instance of the specified type, false otherwise.
+        /// </summary>
+        public bool Contains<T>() where T : MonoView
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                if (_stack[i] is T)
                 {
-                    MoveToTop(instance);
-                    return;
+                    return true;
                 }
             }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the first instance of the specified type in the stack, or null if no instance of that type is found.
+        /// </summary>
+        public T GetFirstView<T>() where T : MonoView
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                if (_stack[i] is T view)
+                {
+                    return view;
+                }
+            }
+
+            return null;
         }
 
         private void RemoveTop()
         {
-            var topView = _stack[^1];
-            _stack.RemoveAt(_stack.Count - 1);
-            topView.OnPopped();
-            topView.parentStack = null;
+            RemoveFromStack(_stack.Count - 1);
+        }
 
-            var transition = topView.ExitTransition();
+        private void RemoveFromStack(int idx)
+        {
+            var view = _stack[idx];
+            _stack.RemoveAt(idx);
+            StopViewCoroutines(view);
+            view.OnPopped();
+            view.parentStack = null;
+            onViewPopped?.Invoke(view);
+
+            var transition = view.ExitTransition();
             if (transition != null)
             {
-                topView.canvasGroup.interactable = false;
-                topView.canvasGroup.blocksRaycasts = false;
-                StartCoroutine(RunExitTransition(topView, transition));
+                view.canvasGroup.interactable = false;
+                view.canvasGroup.blocksRaycasts = false;
+                StartCoroutine(RunExitTransition(view, transition));
             }
             else
             {
-                topView.DestroyMe();
+                view.DestroyMe();
             }
         }
 
@@ -522,6 +664,7 @@ namespace PurrNet.UI
             instance.Initialize(this);
             UpdateOrder(idx);
             instance.OnPushed();
+            onViewPushed?.Invoke(instance);
 
             var transition = instance.EnterTransition();
             if (transition != null)
@@ -558,6 +701,11 @@ namespace PurrNet.UI
 
         private void OnDestroy()
         {
+            if (_subscribedPalette)
+            {
+                _subscribedPalette.onChange -= OnColorPaletteDirty;
+                _subscribedPalette = null;
+            }
             Clear();
         }
     }

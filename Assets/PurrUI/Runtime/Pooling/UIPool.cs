@@ -28,30 +28,47 @@ namespace PurrNet.UI
 
         public T GetInstance()
         {
-            if (_instances.Count <= _index)
+            while (_index < _instances.Count)
             {
-                var gameo = Object.Instantiate(_gameobject, _parent, false);
-                _instances.Add(gameo);
+                var existing = _instances[_index];
+
+                if (!existing)
+                {
+                    _instances.RemoveAt(_index);
+                    continue;
+                }
+
+                _index++;
+                if (!existing.gameObject.activeSelf)
+                    existing.gameObject.SetActive(true);
+                return existing;
             }
 
-            var go = _instances[_index++];
-            if (!go.gameObject.activeSelf) go.gameObject.SetActive(true);
-            return go;
+            var instance = Object.Instantiate(_gameobject, _parent, false);
+            _instances.Add(instance);
+            _index++;
+            return instance;
         }
 
         public void DiscardRest()
         {
             for (int i = _index; i < _instances.Count; i++)
-                _instances[i].gameObject.SetActive(false);
+            {
+                if (_instances[i])
+                    _instances[i].gameObject.SetActive(false);
+            }
             ResetCounter();
         }
 
-        internal void Dispose()
+        public void Dispose()
         {
             ResetCounter();
 
             for (int i = 0; i < _instances.Count; i++)
-                Object.Destroy(_instances[i]);
+            {
+                if (_instances[i])
+                    Object.Destroy(_instances[i].gameObject);
+            }
 
             _instances.Clear();
             _instances.TrimExcess();
