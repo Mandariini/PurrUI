@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -528,6 +529,20 @@ namespace PurrNet.UI
         };
 
         public string[] keys => _keys;
+
+        public Color GetColor(int keyIndex)
+        {
+            return keyIndex switch
+            {
+                0 => graphicColor,
+                1 => gradientColor,
+                2 => outlineColor,
+                3 => shadowColor,
+                4 => embossHighlightColor,
+                5 => embossShadowColor,
+                _ => throw new ArgumentOutOfRangeException(nameof(keyIndex), keyIndex, $"Key index must be between 0 and {_keys.Length - 1}.")
+            };
+        }
 
         public void SetColor(int keyIndex, Color color)
         {
