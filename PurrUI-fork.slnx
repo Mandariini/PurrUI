@@ -1,0 +1,8 @@
+﻿<Solution>
+  <Project Path="PurrUI.Editor.csproj" />
+  <Project Path="PurrUI.Runtime.csproj" />
+  <Project Path="PurrUI.HeroUI.Runtime.csproj" />
+  <Project Path="PurrUI.Tests.EditMode.csproj" />
+  <Project Path="PurrUI.Tests.PlayMode.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+</Solution>
