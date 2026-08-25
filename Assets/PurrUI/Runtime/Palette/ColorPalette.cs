@@ -11,20 +11,21 @@ namespace PurrNet.UI
         [SerializeField] private Color _black = Color.black;
         [SerializeField] private Color _white  = Color.white;
         [SerializeField] private Color _muted  = Color.gray;
+        // Named presets like Color.gray1/dodgerBlue are Unity 6 only; hardcoded for 2022 support.
         [Header("Backgrounds")]
         [SerializeField] private Color _background = Color.black;
         [SerializeField] private Color _foreground = Color.white;
-        [SerializeField] private Color _surface = Color.gray1;
+        [SerializeField] private Color _surface = new Color(0.1f, 0.1f, 0.1f, 1f);
         [SerializeField] private Color _surfaceForeground = Color.white;
         [Header("Primary Colors")]
-        [SerializeField] private Color _accent = Color.dodgerBlue;
+        [SerializeField] private Color _accent = new Color(0.1176471f, 0.5647059f, 1f, 1f);
         [SerializeField] private Color _accentForeground = Color.white;
         [Header("Status Colors")]
-        [SerializeField] private Color _success = Color.mediumSeaGreen;
-        [SerializeField] private Color _successForeground = Color.gray1;
-        [SerializeField] private Color _warning = Color.goldenRod;
-        [SerializeField] private Color _warningForeground = Color.gray1;
-        [SerializeField] private Color _danger = Color.brown;
+        [SerializeField] private Color _success = new Color(0.2352941f, 0.7019608f, 0.4431373f, 1f);
+        [SerializeField] private Color _successForeground = new Color(0.1f, 0.1f, 0.1f, 1f);
+        [SerializeField] private Color _warning = new Color(0.854902f, 0.6470588f, 0.1254902f, 1f);
+        [SerializeField] private Color _warningForeground = new Color(0.1f, 0.1f, 0.1f, 1f);
+        [SerializeField] private Color _danger = new Color(0.6470588f, 0.1647059f, 0.1647059f, 1f);
         [SerializeField] private Color _dangerForeground = Color.white;
 
         public event Action onChange;
