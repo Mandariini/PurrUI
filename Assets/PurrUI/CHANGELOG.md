@@ -1,3 +1,18 @@
+## [1.5.1-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.5.1-beta.1...v1.5.1-beta.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* remove unity 6 api ([4921bfb](https://github.com/PurrNet/PurrUI/commit/4921bfbcd58d8ddb89061b54ddffb643c8a46199))
+
+## [1.5.1-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.5.0...v1.5.1-beta.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* Downgrade unity.ugui dependency from 2.0.0 to 1.0.0 ([f812898](https://github.com/PurrNet/PurrUI/commit/f812898235936816e7d975cbc039aadd377ba00e))
+* unnecessary dirtying of ColoredGraphic ([598b7b3](https://github.com/PurrNet/PurrUI/commit/598b7b33f56dc83d9c6c8bbb5372b218edc89d17))
+
 # [1.5.0](https://github.com/PurrNet/PurrUI/compare/v1.4.0...v1.5.0) (2026-07-31)
 
 
