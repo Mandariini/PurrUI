@@ -1,3 +1,10 @@
+## [1.5.1-beta.2](https://github.com/PurrNet/PurrUI/compare/v1.5.1-beta.1...v1.5.1-beta.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* remove unity 6 api ([4921bfb](https://github.com/PurrNet/PurrUI/commit/4921bfbcd58d8ddb89061b54ddffb643c8a46199))
+
 ## [1.5.1-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.5.0...v1.5.1-beta.1) (2026-08-25)
 
 
