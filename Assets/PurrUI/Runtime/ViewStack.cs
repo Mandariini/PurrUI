@@ -511,7 +511,8 @@ namespace PurrNet.UI
         /// Replaces the specified instance in the stack with a new window of the specified type.
         /// If the instance is no longer part of the stack, pushes the new window instead.
         /// </summary>
-        public T ReplaceOrPush<T>(T instance) where T : MonoView
+        // `T` is the type to create, not the type being replaced - they are usually different.
+        public T ReplaceOrPush<T>(MonoView instance) where T : MonoView
         {
             if (!TryGet<T>(out var prefab))
             {
@@ -519,7 +520,7 @@ namespace PurrNet.UI
                 return null;
             }
 
-            return (T)ReplaceOrPush(instance, prefab);
+            return ReplaceOrPush(instance, prefab);
         }
 
         /// <summary>
