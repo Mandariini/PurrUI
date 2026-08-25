@@ -168,7 +168,7 @@ namespace PurrNet.UI
         /// Adds a new window to the top of the stack using the provided prefab.
         /// The prefab must be a child of the WindowStack GameObject or its descendants.
         /// </summary>
-        public MonoView Push(MonoView prefab)
+        public T Push<T>(T prefab) where T : MonoView
         {
             if (!Application.isPlaying)
                 return null;
@@ -400,7 +400,7 @@ namespace PurrNet.UI
         /// The old top plays its exit transition while the new one plays its enter transition.
         /// Views below are not affected (no unnecessary uncull/re-cull).
         /// </summary>
-        public MonoView Replace(MonoView prefab)
+        public T Replace<T>(T prefab) where T : MonoView
         {
             if (!Application.isPlaying)
                 return null;
@@ -438,7 +438,7 @@ namespace PurrNet.UI
         /// The old instance plays its exit transition while the new one plays its enter transition.
         /// The new window takes the same position in the stack as the old one.
         /// </summary>
-        public MonoView Replace(MonoView instance, MonoView prefab)
+        public T Replace<T>(MonoView instance, T prefab) where T : MonoView
         {
             if (!Application.isPlaying)
                 return null;
@@ -488,7 +488,7 @@ namespace PurrNet.UI
         /// Replaces the specified instance in the stack with a new window instantiated from the provided prefab.
         /// If the instance is no longer part of the stack, pushes the new window instead.
         /// </summary>
-        public MonoView ReplaceOrPush(MonoView instance, MonoView prefab)
+        public T ReplaceOrPush<T>(MonoView instance, T prefab) where T : MonoView
         {
             if (!Application.isPlaying)
                 return null;
@@ -511,7 +511,7 @@ namespace PurrNet.UI
         /// Replaces the specified instance in the stack with a new window of the specified type.
         /// If the instance is no longer part of the stack, pushes the new window instead.
         /// </summary>
-        public T ReplaceOrPush<T>(MonoView instance) where T : MonoView
+        public T ReplaceOrPush<T>(T instance) where T : MonoView
         {
             if (!TryGet<T>(out var prefab))
             {
@@ -652,12 +652,12 @@ namespace PurrNet.UI
             }
         }
 
-        private MonoView AddToStack(MonoView prefab)
+        private T AddToStack<T>(T prefab) where T : MonoView
         {
             return InsertIntoStack(prefab, _stack.Count);
         }
 
-        private MonoView InsertIntoStack(MonoView prefab, int idx)
+        private T InsertIntoStack<T>(T prefab, int idx) where T : MonoView
         {
             var instance = Instantiate(prefab, _parent);
             _stack.Insert(idx, instance);
