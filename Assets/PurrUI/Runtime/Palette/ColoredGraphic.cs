@@ -37,6 +37,25 @@ namespace PurrNet.UI
             set => _transitionDuration = Mathf.Max(0f, value);
         }
 
+        public ColorInfo GetColor(int index)
+        {
+            if (_graphic is not IColored colored)
+            {
+                if (index != 0)
+                    throw new ArgumentOutOfRangeException(nameof(index), index, "Target has a single color slot (index must be 0).");
+                return _color;
+            }
+            else
+            {
+                // Tolerant getter: return an empty ColorInfo for slots that were never set.
+                if (index < 0)
+                    throw new ArgumentOutOfRangeException(nameof(index), index, "Index must be non-negative.");
+                if (index >= _coloredInfos.Count)
+                    return default;
+                return _coloredInfos[index];
+            }
+        }
+
         public void SetColor(ColorInfo info) => SetColor(0, info);
 
         public void SetColor(int index, ColorInfo info)

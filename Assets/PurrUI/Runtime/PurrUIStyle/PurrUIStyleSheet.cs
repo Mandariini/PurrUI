@@ -70,6 +70,8 @@ namespace PurrNet.UI
   [CreateAssetMenu(fileName = "PurrUIStyleSheet", menuName = "PurrUI/Style Sheet")]
   public class PurrUIStyleSheet : ScriptableObject
   {
+    public event Action onChange;
+
     [Header("Palette")]
     [Tooltip("Palette used by all ColoredGraphics and style entries. Referenced, not duplicated.")]
     public ColorPalette palette;
@@ -79,6 +81,11 @@ namespace PurrNet.UI
 
     [Header("Text")]
     [SerializeField] private PurrUITextStyleEntry[] _textStyles;
+
+    private void OnValidate()
+    {
+      onChange?.Invoke();
+    }
 
     public PurrUIButtonStyleEntry GetButtonStyle(PurrUIButtonVariant variant)
     {

@@ -3,7 +3,9 @@
     "rootNamespace": "PurrNet.Editor.UI",
     "references": [
         "GUID:fa956321508a2aa4da8596c3e41eb158",
-        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:324caed91501a9c47a04ebfd87b68794",
+        "GUID:e851236b9ac2b9b4eaaa99506366edea"
     ],
     "includePlatforms": [
         "Editor"

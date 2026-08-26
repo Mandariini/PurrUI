@@ -15,6 +15,7 @@
     "multiplayer"
   ],
   "dependencies": {
+    "com.codewriter.triinspector": "https://github.com/codewriter-packages/Tri-Inspector.git#main",
     "com.unity.ugui": "2.0.0"
   }
 }
