@@ -1,0 +1,157 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25f7d191d528499cb5c9282524f8e571, type: 3}
+  m_Name: StyleSheet
+  m_EditorClassIdentifier: PurrUI.Runtime::PurrNet.UI.PurrUIStyleSheet
+  palette: {fileID: 11400000, guid: 2d0596a89258bc54694330465d5394fa, type: 2}
+  _buttonStyles:
+  - variant: 0
+    baseColor:
+      enabled: 1
+      color: 0
+      contrast: 0
+    colorBlock:
+      m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+      m_HighlightedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_PressedColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 1}
+      m_SelectedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_DisabledColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 0.502}
+      m_ColorMultiplier: 1
+      m_FadeDuration: 0.1
+    pressScale: 0.95
+    pressDuration: 0.08
+    clickSound: {fileID: 0}
+  - variant: 1
+    baseColor:
+      enabled: 1
+      color: 1
+      contrast: 0
+    colorBlock:
+      m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+      m_HighlightedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_PressedColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 1}
+      m_SelectedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_DisabledColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 0.502}
+      m_ColorMultiplier: 1
+      m_FadeDuration: 0.1
+    pressScale: 0.95
+    pressDuration: 0.08
+    clickSound: {fileID: 0}
+  - variant: 2
+    baseColor:
+      enabled: 1
+      color: 7
+      contrast: 0
+    colorBlock:
+      m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+      m_HighlightedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_PressedColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 1}
+      m_SelectedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_DisabledColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 0.502}
+      m_ColorMultiplier: 1
+      m_FadeDuration: 0.1
+    pressScale: 0.95
+    pressDuration: 0.08
+    clickSound: {fileID: 0}
+  - variant: 3
+    baseColor:
+      enabled: 1
+      color: 0
+      contrast: 0
+    colorBlock:
+      m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+      m_HighlightedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_PressedColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 1}
+      m_SelectedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_DisabledColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 0.502}
+      m_ColorMultiplier: 1
+      m_FadeDuration: 0.1
+    pressScale: 0.95
+    pressDuration: 0.08
+    clickSound: {fileID: 0}
+  - variant: 4
+    baseColor:
+      enabled: 1
+      color: 4
+      contrast: 0
+    colorBlock:
+      m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+      m_HighlightedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_PressedColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 1}
+      m_SelectedColor: {r: 0.9608, g: 0.9608, b: 0.9608, a: 1}
+      m_DisabledColor: {r: 0.7843, g: 0.7843, b: 0.7843, a: 0.502}
+      m_ColorMultiplier: 1
+      m_FadeDuration: 0.1
+    pressScale: 0.95
+    pressDuration: 0.08
+    clickSound: {fileID: 0}
+  _textStyles:
+  - style: 0
+    font: {fileID: 0}
+    size: 40
+    color:
+      enabled: 1
+      color: 7
+      contrast: 0
+    fontStyle: 0
+    lineSpacing: 0
+    alignment: 514
+  - style: 1
+    font: {fileID: 0}
+    size: 32
+    color:
+      enabled: 1
+      color: 7
+      contrast: 0
+    fontStyle: 0
+    lineSpacing: 0
+    alignment: 514
+  - style: 2
+    font: {fileID: 0}
+    size: 28
+    color:
+      enabled: 1
+      color: 7
+      contrast: 0
+    fontStyle: 0
+    lineSpacing: 0
+    alignment: 514
+  - style: 3
+    font: {fileID: 0}
+    size: 20
+    color:
+      enabled: 1
+      color: 7
+      contrast: 0
+    fontStyle: 0
+    lineSpacing: 0
+    alignment: 514
+  - style: 4
+    font: {fileID: 0}
+    size: 32
+    color:
+      enabled: 1
+      color: 7
+      contrast: 0
+    fontStyle: 0
+    lineSpacing: 0
+    alignment: 514
+  - style: 5
+    font: {fileID: 0}
+    size: 26
+    color:
+      enabled: 1
+      color: 7
+      contrast: 0
+    fontStyle: 0
+    lineSpacing: 0
+    alignment: 514

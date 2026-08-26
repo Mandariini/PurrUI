@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.codewriter.triinspector": "https://github.com/codewriter-packages/Tri-Inspector.git#main",
     "com.unity.ai.navigation": "2.0.14",
     "com.unity.collab-proxy": "2.13.3",
     "com.unity.ide.rider": "3.0.39",

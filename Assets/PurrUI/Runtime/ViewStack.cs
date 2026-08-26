@@ -11,6 +11,7 @@ namespace PurrNet.UI
         [SerializeField, HideInInspector, Obsolete] private ViewCollection _prefabs;
         [SerializeField] private List<ViewCollection> _prefabCollections;
         [SerializeField] private ColorPalette _colorPalette;
+        [SerializeField] private PurrUIStyleSheet _styleSheet;
         [SerializeField] private MonoView _pushOnStart;
         [SerializeField] private int _orderOffset;
 
@@ -48,6 +49,9 @@ namespace PurrNet.UI
         {
             get
             {
+                // A style sheet bundles its own palette; when assigned it takes precedence.
+                if (_styleSheet != null && _styleSheet.palette != null)
+                    return _styleSheet.palette;
                 return _colorPalette;
             }
             set
@@ -67,13 +71,15 @@ namespace PurrNet.UI
 
         private void SubscribeToPalette()
         {
-            if (_subscribedPalette == _colorPalette)
+            var effectivePalette = palette;
+
+            if (_subscribedPalette == effectivePalette)
                 return;
 
             if (_subscribedPalette)
                 _subscribedPalette.onChange -= OnColorPaletteDirty;
 
-            _subscribedPalette = _colorPalette;
+            _subscribedPalette = effectivePalette;
 
             if (_subscribedPalette)
                 _subscribedPalette.onChange += OnColorPaletteDirty;

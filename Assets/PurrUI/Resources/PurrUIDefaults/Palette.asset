@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56c775d8c82442a40907c8969d62b035, type: 3}
+  m_Name: Palette
+  m_EditorClassIdentifier: PurrUI.Runtime::PurrNet.UI.ColorPalette
+  _black: {r: 0, g: 0, b: 0, a: 1}
+  _white: {r: 1, g: 1, b: 1, a: 1}
+  _muted: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  _background: {r: 0, g: 0, b: 0, a: 1}
+  _foreground: {r: 1, g: 1, b: 1, a: 1}
+  _surface: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  _surfaceForeground: {r: 1, g: 1, b: 1, a: 1}
+  _accent: {r: 0.1176471, g: 0.5647059, b: 1, a: 1}
+  _accentForeground: {r: 1, g: 1, b: 1, a: 1}
+  _success: {r: 0.2352941, g: 0.7019608, b: 0.4431373, a: 1}
+  _successForeground: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  _warning: {r: 0.854902, g: 0.6470588, b: 0.1254902, a: 1}
+  _warningForeground: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  _danger: {r: 0.6470588, g: 0.1647059, b: 0.1647059, a: 1}
+  _dangerForeground: {r: 1, g: 1, b: 1, a: 1}
