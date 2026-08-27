@@ -14,6 +14,30 @@ namespace PurrNet.Editor.UI
         const string UI_CREATE_PATH = "GameObject/UI/";
 #endif
 
+        const string PALETTE_SETTINGS_PATH = "Assets/Resources/PurrUI/PaletteSettings.asset";
+
+        [MenuItem("PurrUI/Global Palette Settings", false, 100)]
+        static void OpenGlobalPaletteSettings()
+        {
+            var settings = AssetDatabase.LoadAssetAtPath<PurrUIPaletteSettings>(PALETTE_SETTINGS_PATH);
+
+            if (settings == null)
+            {
+                if (!AssetDatabase.IsValidFolder("Assets/Resources"))
+                    AssetDatabase.CreateFolder("Assets", "Resources");
+                if (!AssetDatabase.IsValidFolder("Assets/Resources/PurrUI"))
+                    AssetDatabase.CreateFolder("Assets/Resources", "PurrUI");
+
+                settings = ScriptableObject.CreateInstance<PurrUIPaletteSettings>();
+                AssetDatabase.CreateAsset(settings, PALETTE_SETTINGS_PATH);
+                AssetDatabase.SaveAssets();
+                PurrUIPaletteSettings.global = settings;
+            }
+
+            Selection.activeObject = settings;
+            EditorGUIUtility.PingObject(settings);
+        }
+
         [MenuItem(UI_CREATE_PATH + "PurrUI Rectangle", false, 2100)]
         static void CreateRectangle(MenuCommand menuCommand)
         {

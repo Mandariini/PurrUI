@@ -50,7 +50,37 @@ namespace PurrNet.Editor.UI
             else
                 EditorGUILayout.PropertyField(_colorProp, new GUIContent("Color"));
 
+            DrawPaletteSource();
+
             ApplyAndRefresh();
+        }
+
+        void DrawPaletteSource()
+        {
+            if (targets.Length != 1)
+                return;
+
+            var colored = (ColoredGraphic)target;
+            var active = colored.activePalette;
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Palette Source", EditorStyles.boldLabel);
+
+            if (active == null)
+            {
+                EditorGUILayout.HelpBox(
+                    "No palette found in the hierarchy and no global palette settings.\n" +
+                    "Add a PaletteProvider above this object or create global settings via PurrUI > Global Palette Settings.",
+                    MessageType.Warning);
+                return;
+            }
+
+            EditorGUILayout.ObjectField("Active Palette", active, typeof(ColorPalette), false);
+
+            if (colored.isUsingGlobalPalette)
+                EditorGUILayout.HelpBox(
+                    "Resolved from the global palette settings - no IPaletteProvider in the hierarchy.",
+                    MessageType.Info);
         }
 
         void DrawMultiKey(IColored colored)
