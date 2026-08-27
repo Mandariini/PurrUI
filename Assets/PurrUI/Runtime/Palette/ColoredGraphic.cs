@@ -37,6 +37,18 @@ namespace PurrNet.UI
             set => _transitionDuration = Mathf.Max(0f, value);
         }
 
+        /// <summary>
+        /// Palette currently driving this graphic: the closest IPaletteProvider in the
+        /// hierarchy, or the global palette settings when no provider exists.
+        /// </summary>
+        public ColorPalette activePalette => _paletteProvider?.palette;
+
+        /// <summary>
+        /// True when the palette is resolved from the global palette settings
+        /// because no IPaletteProvider exists in the hierarchy.
+        /// </summary>
+        public bool isUsingGlobalPalette => ReferenceEquals(_paletteProvider, GlobalPaletteProvider.Instance);
+
         public void SetColor(ColorInfo info) => SetColor(0, info);
 
         public void SetColor(int index, ColorInfo info)
@@ -91,6 +103,8 @@ namespace PurrNet.UI
         private void ResolveProvider()
         {
             var found = GetComponentInParent<IPaletteProvider>(true);
+            if (found == null)
+                found = GlobalPaletteProvider.Instance;
 
             if (ReferenceEquals(found, _paletteProvider))
                 return;

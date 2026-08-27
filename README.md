@@ -304,6 +304,14 @@ Your own state machine (hover/pressed/etc.) can push new `ColorInfo`s and the tr
 
 The closest provider wins, so nested providers work naturally for scoped theme overrides.
 
+When no provider exists in the hierarchy, `ColoredGraphic` falls back to the **global palette settings** - a `PurrUIPaletteSettings` ScriptableObject that clearly owns your project-wide palette:
+
+- Run **PurrUI > Global Palette Settings** to create/open `Assets/Resources/PurrUI/PaletteSettings.asset` and assign a palette to it.
+- Or create one via **Create > PurrNet > PurrUI > Palette Settings** and register it explicitly: `PurrUIPaletteSettings.global = settings;`
+- Without either, the package default at `PurrUIDefaults/PaletteSettings` is used.
+
+The `ColoredGraphic` inspector shows the active palette and whether it came from the global settings, so the source is never hidden. Changes to the global palette propagate live, just like any other provider.
+
 # Sounds2D
 
 A lightweight, fire-and-forget 2D audio system. It manages a small pool of `AudioSource` components (up to 5) on a `DontDestroyOnLoad` GameObject, so you never have to wire up audio sources yourself.
