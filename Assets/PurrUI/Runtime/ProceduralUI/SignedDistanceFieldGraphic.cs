@@ -70,7 +70,11 @@ namespace PurrNet.UI
             | AdditionalCanvasShaderChannels.Normal
             | AdditionalCanvasShaderChannels.Tangent;
 #if UNITY_EDITOR
-        bool _editorRebuildQueued;
+        // Graphics waiting for an editor rebuild. All of them are refreshed in ONE delayCall followed by
+        // ONE Canvas.ForceUpdateCanvases(), instead of a forced rebuild of every canvas per graphic.
+        static readonly System.Collections.Generic.HashSet<SignedDistanceFieldGraphic> s_PendingEditorRebuilds =
+            new System.Collections.Generic.HashSet<SignedDistanceFieldGraphic>();
+        static bool s_EditorFlushQueued;
 #endif
 
         public Texture texture
@@ -296,21 +300,48 @@ namespace PurrNet.UI
 #if UNITY_EDITOR
         void QueueEditorRebuild()
         {
-            if (Application.isPlaying || _editorRebuildQueued)
+            if (Application.isPlaying)
                 return;
 
-            _editorRebuildQueued = true;
-            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
-            UnityEditor.EditorApplication.delayCall += () =>
-            {
-                _editorRebuildQueued = false;
-                if (!this || !isActiveAndEnabled) return;
+            s_PendingEditorRebuilds.Add(this);
+            if (s_EditorFlushQueued)
+                return;
 
-                EnsureAdditionalCanvasChannels();
-                SetAllDirty();
-                Canvas.ForceUpdateCanvases();
-                UnityEditor.SceneView.RepaintAll();
-            };
+            s_EditorFlushQueued = true;
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+            UnityEditor.EditorApplication.delayCall += FlushEditorRebuilds;
+        }
+
+        // Canvas.ForceUpdateCanvases() rebuilds every canvas in the editor, so calling it once per
+        // queued graphic made opening a prefab cost (graphic count x whole-canvas rebuild). With a few
+        // dozen graphics on a heavy canvas that stalled the editor for minutes. One flush per tick keeps
+        // the immediate refresh while making the cost independent of how many graphics asked for it.
+        static void FlushEditorRebuilds()
+        {
+            s_EditorFlushQueued = false;
+            if (s_PendingEditorRebuilds.Count == 0)
+                return;
+
+            // Copy first: refreshing can queue graphics again, and those wait for the next flush.
+            var pending = new System.Collections.Generic.List<SignedDistanceFieldGraphic>(s_PendingEditorRebuilds);
+            s_PendingEditorRebuilds.Clear();
+
+            bool anyRefreshed = false;
+            foreach (var graphic in pending)
+            {
+                if (!graphic || !graphic.isActiveAndEnabled)
+                    continue;
+
+                graphic.EnsureAdditionalCanvasChannels();
+                graphic.SetAllDirty();
+                anyRefreshed = true;
+            }
+
+            if (!anyRefreshed)
+                return;
+
+            Canvas.ForceUpdateCanvases();
+            UnityEditor.SceneView.RepaintAll();
         }
 #endif
 
