@@ -1,3 +1,10 @@
+## [1.6.1-beta.1](https://github.com/PurrNet/PurrUI/compare/v1.6.0...v1.6.1-beta.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* drop the prefab-stage refresher's extra ForceUpdateCanvases ([98a8eb6](https://github.com/PurrNet/PurrUI/commit/98a8eb6d6a9f4ca8b9eaaa349ebd29a30c70158c))
+
 # [1.6.0](https://github.com/PurrNet/PurrUI/compare/v1.5.2...v1.6.0) (2026-09-21)
 
 
