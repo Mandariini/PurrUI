@@ -19,12 +19,12 @@ namespace PurrNet.UI.Tests
         private ColorPalette _palette;
         private ButtonElement _button;
         private RectangleGraphic _graphic;
-        private HashSet<int> _existingSoundPlayers;
+        private HashSet<EntityId> _existingSoundPlayers;
 
         [SetUp]
         public void SetUp()
         {
-            _existingSoundPlayers = new HashSet<int>(Resources.FindObjectsOfTypeAll<Sounds2D>().Select(player => player.GetInstanceID()));
+            _existingSoundPlayers = new HashSet<EntityId>(Resources.FindObjectsOfTypeAll<Sounds2D>().Select(player => player.GetEntityId()));
         }
 
         [TearDown]
@@ -33,7 +33,7 @@ namespace PurrNet.UI.Tests
             if (_parent) Object.DestroyImmediate(_parent);
             if (_palette) Object.DestroyImmediate(_palette);
             foreach (var player in Resources.FindObjectsOfTypeAll<Sounds2D>())
-                if (!_existingSoundPlayers.Contains(player.GetInstanceID())) Object.DestroyImmediate(player.gameObject);
+                if (!_existingSoundPlayers.Contains(player.GetEntityId())) Object.DestroyImmediate(player.gameObject);
         }
 
         [Test]

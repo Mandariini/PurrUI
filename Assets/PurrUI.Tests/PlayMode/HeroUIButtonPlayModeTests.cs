@@ -15,13 +15,13 @@ namespace PurrNet.UI.Tests
         private GameObject _parent;
         private ColorPalette _palette;
         private AudioClip _clip;
-        private HashSet<int> _existingSoundPlayers;
+        private HashSet<EntityId> _existingSoundPlayers;
 
         [UnityTest]
         public IEnumerator RuntimePointers_PreserveHoverPressPaletteClickAudioAndInteractionGate()
         {
             Assert.That(Application.isPlaying, Is.True, "This fixture must run in the PlayMode test assembly.");
-            _existingSoundPlayers = new HashSet<int>(Resources.FindObjectsOfTypeAll<Sounds2D>().Select(player => player.GetInstanceID()));
+            _existingSoundPlayers = new HashSet<EntityId>(Resources.FindObjectsOfTypeAll<Sounds2D>().Select(player => player.GetEntityId()));
             _palette = ScriptableObject.CreateInstance<ColorPalette>();
             _palette.SetColor(ColorType.Accent, new Color(.1f, .3f, .7f, 1f));
             _palette.SetColor(ColorType.Warning, new Color(.7f, .4f, .1f, 1f));
@@ -105,7 +105,7 @@ namespace PurrNet.UI.Tests
         {
             if (_parent) Object.DestroyImmediate(_parent);
             foreach (var player in Resources.FindObjectsOfTypeAll<Sounds2D>())
-                if (_existingSoundPlayers != null && !_existingSoundPlayers.Contains(player.GetInstanceID())) Object.DestroyImmediate(player.gameObject);
+                if (_existingSoundPlayers != null && !_existingSoundPlayers.Contains(player.GetEntityId())) Object.DestroyImmediate(player.gameObject);
             if (_palette) Object.DestroyImmediate(_palette);
             if (_clip) Object.DestroyImmediate(_clip);
         }
