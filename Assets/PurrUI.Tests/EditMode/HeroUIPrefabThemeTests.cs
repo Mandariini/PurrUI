@@ -49,7 +49,7 @@ namespace PurrNet.UI.Tests
                         {
                             if (property.propertyType == SerializedPropertyType.ObjectReference &&
                                 !property.objectReferenceValue)
-                                Assert.That(property.objectReferenceInstanceIDValue, Is.Zero,
+                                Assert.That(property.objectReferenceEntityIdValue, Is.EqualTo(EntityId.None),
                                     path + ": broken reference " + component.name + "." + property.propertyPath);
                         }
                     }
