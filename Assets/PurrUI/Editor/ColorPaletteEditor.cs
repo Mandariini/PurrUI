@@ -9,12 +9,6 @@ namespace PurrNet.Editor.UI
     [CanEditMultipleObjects]
     public class ColorPaletteEditor : UnityEditor.Editor
     {
-        // Conventional ids for the roles this project added on top of ColorType.
-        const int ProjectRoleOverlay = 9;
-        const int ProjectRoleShadow = 10;
-        const int ProjectRoleBorder = 11;
-        const int ProjectRoleDamage = 12;
-
         static ColorUsageScanner.Result _usage;
         static ColorPalette _usageFor;
         int _expandedColor = -1;
@@ -38,6 +32,8 @@ namespace PurrNet.Editor.UI
 
             DrawColors(palette);
             EditorGUILayout.Space();
+            DrawPreviewRoles(palette);
+            EditorGUILayout.Space();
             DrawStyles();
 
             serializedObject.ApplyModifiedProperties();
@@ -47,8 +43,53 @@ namespace PurrNet.Editor.UI
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Preview", EditorStyles.boldLabel);
-            var rect = GUILayoutUtility.GetRect(100f, 200f, GUILayout.ExpandWidth(true));
+            var rect = GUILayoutUtility.GetRect(100f, 224f, GUILayout.ExpandWidth(true));
             DrawPreview(rect, palette);
+        }
+
+        /// <summary>
+        /// Lets the palette say which color plays each role in the preview below. Preview only -
+        /// the package never assumes a project's role ids.
+        /// </summary>
+        void DrawPreviewRoles(ColorPalette palette)
+        {
+            EditorGUILayout.LabelField("Preview roles", EditorStyles.boldLabel);
+
+            if (palette == null)
+                return;
+
+            EditorGUILayout.HelpBox(
+                "Which color the Preview below illustrates for each role. Purely for the preview - " +
+                "runtime rendering ignores these.",
+                MessageType.None);
+
+            DrawRolePopup("Scrim", palette, "_previewScrim");
+            DrawRolePopup("Shadow", palette, "_previewShadow");
+            DrawRolePopup("Border", palette, "_previewBorder");
+            DrawRolePopup("Trail", palette, "_previewTrail");
+        }
+
+        void DrawRolePopup(string label, ColorPalette palette, string propertyName)
+        {
+            var prop = serializedObject.FindProperty(propertyName);
+            if (prop == null)
+                return;
+
+            var ids = new List<int> { -1 };
+            var names = new List<string> { "none" };
+
+            for (int i = 0; i < palette.count; i++)
+            {
+                var entry = palette.colors[i];
+                ids.Add(entry.id);
+                names.Add(entry.id + "   " + entry.name);
+            }
+
+            int selected = ids.IndexOf(prop.intValue);
+            EditorGUI.BeginChangeCheck();
+            int picked = EditorGUILayout.Popup(label, Mathf.Max(selected, 0), names.ToArray());
+            if (EditorGUI.EndChangeCheck() || selected < 0)
+                prop.intValue = ids[Mathf.Clamp(picked, 0, ids.Count - 1)];
         }
 
         // --- colors list ------------------------------------------------------
@@ -275,29 +316,59 @@ namespace PurrNet.Editor.UI
 
         static void DrawPreview(Rect rect, ColorPalette palette)
         {
-            // Scene: background, then a scrim covering part of it (Overlay).
-            EditorGUI.DrawRect(rect, RoleOr(palette, (int)ColorType.Background, new Color(0.06f, 0.06f, 0.06f, 1f)));
-            var scrim = new Rect(rect.x, rect.y, rect.width * 0.38f, rect.height);
-            EditorGUI.DrawRect(scrim, RoleOr(palette, ProjectRoleOverlay, new Color(0f, 0f, 0f, 0.72f)));
+            var background = RoleOr(palette, (int)ColorType.Background, new Color(0.06f, 0.06f, 0.06f, 1f));
+            var surface = RoleOr(palette, (int)ColorType.Surface, new Color(0.14f, 0.14f, 0.14f, 1f));
+            var surfaceFg = RoleContrastOr(palette, (int)ColorType.Surface, new Color(0.8f, 0.8f, 0.8f, 1f));
+            var muted = RoleOr(palette, (int)ColorType.Muted, surfaceFg * 0.7f);
 
-            const float outerPad = 12f;
-            var card = new Rect(rect.x + outerPad, rect.y + outerPad,
-                                rect.width - outerPad * 2f, rect.height - outerPad * 2f);
+            int scrimId = palette.GetPreviewColor(ColorPalette.PreviewRole.Scrim);
+            int shadowId = palette.GetPreviewColor(ColorPalette.PreviewRole.Shadow);
+            int borderId = palette.GetPreviewColor(ColorPalette.PreviewRole.Border);
+            int trailId = palette.GetPreviewColor(ColorPalette.PreviewRole.Trail);
 
-            // Shadow -> border ring -> card face.
-            DrawRoundedRect(new Rect(card.x + 3f, card.y + 4f, card.width, card.height),
-                RoleOr(palette, ProjectRoleShadow, new Color(0f, 0f, 0f, 0.5f)), palette.styles.panelRoundness);
-            DrawRoundedRect(new Rect(card.x - 1f, card.y - 1f, card.width + 2f, card.height + 2f),
-                RoleOr(palette, ProjectRoleBorder, new Color(0.44f, 0.49f, 0.47f, 0.35f)), palette.styles.panelRoundness);
-            DrawRoundedRect(card, RoleOr(palette, (int)ColorType.Surface, new Color(0.14f, 0.14f, 0.14f, 1f)), palette.styles.panelRoundness);
+            EditorGUI.DrawRect(rect, background);
+
+            // Optional scrim: some background content, dimmed on the left half.
+            float cardLeft = rect.x + 14f;
+            if (palette.IsValid(scrimId))
+            {
+                float scrimWidth = rect.width * 0.46f;
+                var scrimArea = new Rect(rect.x, rect.y, scrimWidth, rect.height);
+                float sceneY = rect.y + rect.height * 0.16f;
+                for (int i = 0; i < 4; i++)
+                {
+                    float sceneBarWidth = scrimWidth * (0.30f + 0.16f * (i % 3));
+                    EditorGUI.DrawRect(new Rect(scrimArea.x + 10f, sceneY, sceneBarWidth, 7f), muted);
+                    sceneY += 20f;
+                }
+
+                EditorGUI.DrawRect(scrimArea, palette.GetColor(scrimId));
+                cardLeft = scrimArea.xMax + 8f;
+            }
+
+            var card = new Rect(cardLeft, rect.y + 12f, rect.xMax - cardLeft - 14f, rect.height - 24f);
+
+            if (palette.IsValid(shadowId))
+            {
+                var shadow = palette.GetColor(shadowId);
+                DrawRoundedRect(new Rect(card.x + 9f, card.y + 11f, card.width, card.height),
+                    new Color(shadow.r, shadow.g, shadow.b, shadow.a * 0.5f), palette.styles.panelRoundness);
+                DrawRoundedRect(new Rect(card.x + 5f, card.y + 6f, card.width, card.height),
+                    shadow, palette.styles.panelRoundness);
+            }
+
+            if (palette.IsValid(borderId))
+            {
+                DrawRoundedRect(new Rect(card.x - 2f, card.y - 2f, card.width + 4f, card.height + 4f),
+                    palette.GetColor(borderId), palette.styles.panelRoundness);
+            }
+
+            DrawRoundedRect(card, surface, palette.styles.panelRoundness);
 
             const float innerPad = 10f;
             float x = card.x + innerPad;
             float y = card.y + innerPad;
             float contentWidth = card.width - innerPad * 2f;
-
-            var surfaceFg = RoleContrastOr(palette, (int)ColorType.Surface, new Color(0.8f, 0.8f, 0.8f, 1f));
-            var muted = RoleOr(palette, (int)ColorType.Muted, surfaceFg * 0.7f);
 
             DrawBar(x, y, contentWidth * 0.60f, 8f, surfaceFg);
             y += 14f;
@@ -306,22 +377,29 @@ namespace PurrNet.Editor.UI
             y += 10f;
 
             DrawBar(x, y, contentWidth * 0.30f, 5f, surfaceFg);
-            y += 16f;
+            y += 18f;
 
             const float buttonHeight = 26f;
-            float buttonWidth = contentWidth * 0.38f;
+            float buttonWidth = contentWidth * 0.42f;
             var button = new Rect(x, y, buttonWidth, buttonHeight);
             DrawRoundedRect(button, RoleOr(palette, (int)ColorType.Accent, new Color(0.25f, 0.48f, 0.45f, 1f)), palette.styles.buttonRoundness);
             DrawBar(button.x + 10f, button.y + button.height * 0.5f - 3f,
                     button.width - 20f, 6f, RoleContrastOr(palette, (int)ColorType.Accent, new Color(0.9f, 0.93f, 0.92f, 1f)));
             y += buttonHeight + 12f;
 
-            // Bar: track, damage trail, fill (the health bar case).
-            var bar = new Rect(x, y, contentWidth, 12f);
+            // Progress bar: track, optional trail, fill.
+            var bar = new Rect(x, y, contentWidth, 14f);
             DrawRoundedRect(bar, RoleOr(palette, (int)ColorType.Black, new Color(0.02f, 0.03f, 0.04f, 1f)), palette.styles.panelRoundness);
-            DrawRoundedRect(new Rect(bar.x, bar.y, bar.width * 0.70f, bar.height),
-                RoleOr(palette, ProjectRoleDamage, new Color(0.3f, 0.13f, 0.13f, 1f)), palette.styles.panelRoundness);
-            DrawRoundedRect(new Rect(bar.x, bar.y, bar.width * 0.55f, bar.height),
+
+            float fillRatio = 0.55f;
+            if (palette.IsValid(trailId))
+            {
+                DrawRoundedRect(new Rect(bar.x, bar.y, bar.width * 0.72f, bar.height),
+                    palette.GetColor(trailId), palette.styles.panelRoundness);
+                fillRatio = 0.42f;
+            }
+
+            DrawRoundedRect(new Rect(bar.x, bar.y, bar.width * fillRatio, bar.height),
                 RoleOr(palette, (int)ColorType.Success, new Color(0.43f, 0.61f, 0.45f, 1f)), palette.styles.panelRoundness);
             y += bar.height + 12f;
 
