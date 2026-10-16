@@ -13,24 +13,6 @@ namespace PurrNet.UI
                  "so entries can be added, removed or reordered freely.")]
         [SerializeField] private List<PaletteColor> _colors = new();
 
-        // Legacy value fields: only used to seed _colors for palettes created before the list
-        // existed. Safe to delete once every palette asset has been re-saved.
-        [SerializeField, HideInInspector] private Color _black = Color.black;
-        [SerializeField, HideInInspector] private Color _white = Color.white;
-        [SerializeField, HideInInspector] private Color _muted = Color.gray;
-        [SerializeField, HideInInspector] private Color _background = Color.black;
-        [SerializeField, HideInInspector] private Color _foreground = Color.white;
-        [SerializeField, HideInInspector] private Color _surface = new Color(0.1f, 0.1f, 0.1f, 1f);
-        [SerializeField, HideInInspector] private Color _surfaceForeground = Color.white;
-        [SerializeField, HideInInspector] private Color _accent = new Color(0.1176471f, 0.5647059f, 1f, 1f);
-        [SerializeField, HideInInspector] private Color _accentForeground = Color.white;
-        [SerializeField, HideInInspector] private Color _success = new Color(0.2352941f, 0.7019608f, 0.4431373f, 1f);
-        [SerializeField, HideInInspector] private Color _successForeground = new Color(0.1f, 0.1f, 0.1f, 1f);
-        [SerializeField, HideInInspector] private Color _warning = new Color(0.854902f, 0.6470588f, 0.1254902f, 1f);
-        [SerializeField, HideInInspector] private Color _warningForeground = new Color(0.1f, 0.1f, 0.1f, 1f);
-        [SerializeField, HideInInspector] private Color _danger = new Color(0.6470588f, 0.1647059f, 0.1647059f, 1f);
-        [SerializeField, HideInInspector] private Color _dangerForeground = Color.white;
-
         [Header("Default Styles")]
         [Tooltip("Shared styling for elements using theme defaults. Custom element settings remain local.")]
         [SerializeField] private ThemeStyles _styles = ThemeStyles.Default;
@@ -58,9 +40,9 @@ namespace PurrNet.UI
         }
 
         /// <summary>
-        /// Fills in default colors when the list is empty (palettes authored before the list
-        /// existed) and assigns ids to entries that don't have one yet. Seeded ids match the
-        /// legacy indices, so existing references keep resolving to the same color.
+        /// Fills in the default colors when the list is empty, and assigns ids to entries that
+        /// don't have one yet. Seeded ids match the conventional role numbers, so they line up
+        /// with the ColorType values code uses.
         /// </summary>
         public void EnsureSeeded()
         {
@@ -69,18 +51,7 @@ namespace PurrNet.UI
 
             if (_colors.Count == 0)
             {
-                _colors = new List<PaletteColor>
-                {
-                    new PaletteColor(0, "Accent", _accent, true, _accentForeground),
-                    new PaletteColor(1, "Surface", _surface, true, _surfaceForeground),
-                    new PaletteColor(2, "Success", _success, true, _successForeground),
-                    new PaletteColor(3, "Warning", _warning, true, _warningForeground),
-                    new PaletteColor(4, "Danger", _danger, true, _dangerForeground),
-                    new PaletteColor(5, "Background", _background, true, _foreground),
-                    new PaletteColor(6, "Black", _black),
-                    new PaletteColor(7, "White", _white),
-                    new PaletteColor(8, "Muted", _muted),
-                };
+                _colors = CreateDefaultColors();
                 return;
             }
 
@@ -103,6 +74,26 @@ namespace PurrNet.UI
             }
         }
 
+        /// <summary>
+        /// The palette a fresh asset starts with: the conventional core roles, matching
+        /// ColorType's numbering. Projects add their own colors after these.
+        /// </summary>
+        public static List<PaletteColor> CreateDefaultColors()
+        {
+            return new List<PaletteColor>
+            {
+                new PaletteColor(0, "Accent", new Color(0.24313726f, 0.47843137f, 0.45490196f, 1f), true, new Color(0.90588236f, 0.93333334f, 0.9254902f, 1f)),
+                new PaletteColor(1, "Surface", new Color(0.13725491f, 0.16862746f, 0.1882353f, 1f), true, new Color(0.7882353f, 0.8156863f, 0.8039216f, 1f)),
+                new PaletteColor(2, "Success", new Color(0.43137255f, 0.6117647f, 0.44705883f, 1f), true, new Color(0.047058824f, 0.0627451f, 0.07450981f, 1f)),
+                new PaletteColor(3, "Warning", new Color(0.7254902f, 0.56078434f, 0.2901961f, 1f), true, new Color(0.047058824f, 0.0627451f, 0.07450981f, 1f)),
+                new PaletteColor(4, "Danger", new Color(0.6313726f, 0.23529412f, 0.22352941f, 1f), true, new Color(0.92941177f, 0.9019608f, 0.89411765f, 1f)),
+                new PaletteColor(5, "Background", new Color(0.039215688f, 0.05490196f, 0.0627451f, 1f), true, new Color(0.8784314f, 0.8980392f, 0.8862745f, 1f)),
+                new PaletteColor(6, "Black", new Color(0.023529412f, 0.039215688f, 0.047058824f, 1f)),
+                new PaletteColor(7, "White", new Color(0.8784314f, 0.8980392f, 0.8862745f, 1f)),
+                new PaletteColor(8, "Muted", new Color(0.4392157f, 0.4862745f, 0.4745098f, 1f)),
+            };
+        }
+
         /// <summary>The entry with this id, or null.</summary>
         public PaletteColor GetEntry(int id)
         {
@@ -120,7 +111,7 @@ namespace PurrNet.UI
 
         public bool IsValid(int id) => GetEntry(id) != null;
 
-        public string GetName(int id) => GetEntry(id)?.name ?? "â€”";
+        public string GetName(int id) => GetEntry(id)?.name ?? "—";
 
         public bool IsHidden(int id) => GetEntry(id)?.hidden ?? false;
 
