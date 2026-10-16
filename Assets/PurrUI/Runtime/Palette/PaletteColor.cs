@@ -4,12 +4,16 @@ using UnityEngine;
 namespace PurrNet.UI
 {
     /// <summary>
-    /// One named color in a <see cref="ColorPalette"/>. A palette stores an ordered list of these,
-    /// and a <see cref="ColorInfo"/> references one by index (the value of its ColorType).
+    /// One named color in a <see cref="ColorPalette"/>. Entries carry a stable <see cref="id"/>;
+    /// a <see cref="ColorInfo"/> stores that id (as its ColorType value), so colors can be added,
+    /// removed or reordered without breaking existing references.
     /// </summary>
     [Serializable]
     public class PaletteColor
     {
+        [Tooltip("Stable reference id. Referenced by ColorInfo; never change it.")]
+        [SerializeField] private int _id;
+
         [Tooltip("Shown in color pickers and in the palette inspector.")]
         public string name = "Color";
 
@@ -21,13 +25,21 @@ namespace PurrNet.UI
         public Color contrast = Color.white;
 
         [Tooltip("Keeps the entry out of color pickers. Existing references still resolve; it just " +
-                 "won't be offered for new ones.")]
+                 "won't be offered for new ones. Use this instead of deleting a color that is still used.")]
         public bool hidden;
+
+        /// <summary>Stable id used by <see cref="ColorInfo"/>. Assigned automatically, never reused.</summary>
+        public int id
+        {
+            get => _id;
+            set => _id = value;
+        }
 
         public PaletteColor() { }
 
-        public PaletteColor(string name, Color color, bool hasContrast = false, Color contrast = default, bool hidden = false)
+        public PaletteColor(int id, string name, Color color, bool hasContrast = false, Color contrast = default, bool hidden = false)
         {
+            _id = id;
             this.name = name;
             this.color = color;
             this.hasContrast = hasContrast;

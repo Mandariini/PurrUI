@@ -77,12 +77,12 @@ namespace PurrNet.Editor.UI
             {
                 for (int i = 0; i < palette.count; i++)
                 {
-                    bool hidden = palette.IsHidden(i);
-                    if (hidden && i != current)
+                    var entry = palette.colors[i];
+                    if (entry.hidden && entry.id != current)
                         continue;
 
-                    names.Add(i + "   " + palette.GetName(i) + (hidden ? "   (hidden)" : string.Empty));
-                    indices.Add(i);
+                    names.Add(entry.id + "   " + entry.name + (entry.hidden ? "   (hidden)" : string.Empty));
+                    indices.Add(entry.id);
                 }
             }
             else
