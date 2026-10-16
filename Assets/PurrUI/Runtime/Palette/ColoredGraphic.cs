@@ -250,34 +250,25 @@ namespace PurrNet.UI
 
         private void WriteCurrent(IColored colored, int slotCount)
         {
+            // Note: this deliberately does not mark the graphic dirty. The write only mirrors the
+            // palette's resolved color in memory, which keeps editor visuals correct, but marking
+            // the object dirty under a prefab instance/variant makes Unity record it as an override
+            // - so palette changes would litter every prefab with "changed" color values (and undo
+            // manual reverts). Inspector edits go through SerializedObject, which records what the
+            // user actually changed.
             if (colored == null)
             {
                 if (slotCount > 0 && _color.enabled && _graphic.color != _current[0])
-                {
                     _graphic.color = _current[0];
-#if UNITY_EDITOR
-                    if (!Application.isPlaying)
-                        UnityEditor.EditorUtility.SetDirty(_graphic);
-#endif
-                }
                 return;
             }
 
             int count = Mathf.Min(_coloredInfos.Count, slotCount);
-            bool anyChanged = false;
             for (int i = 0; i < count; i++)
             {
                 if (_coloredInfos[i].enabled && colored.GetColor(i) != _current[i])
-                {
                     colored.SetColor(i, _current[i]);
-                    anyChanged = true;
-                }
             }
-
-#if UNITY_EDITOR
-            if (!Application.isPlaying && anyChanged)
-                UnityEditor.EditorUtility.SetDirty(_graphic);
-#endif
         }
 
         private void ColorsUpdated()
