@@ -17,6 +17,53 @@ namespace PurrNet.UI
         [Tooltip("Shared styling for elements using theme defaults. Custom element settings remain local.")]
         [SerializeField] private ThemeStyles _styles = ThemeStyles.Default;
 
+        /// <summary>
+        /// Roles the palette preview can illustrate. A palette assigns one of its colors to each
+        /// (or leaves it empty); this only affects the preview, never runtime rendering.
+        /// </summary>
+        public enum PreviewRole
+        {
+            None = -1,
+            Scrim = 0,
+            Shadow = 1,
+            Border = 2,
+            Trail = 3
+        }
+
+        [Header("Preview roles")]
+        [Tooltip("Color id illustrated as each preview role, or -1 for none. Preview only.")]
+        [SerializeField] private int _previewScrim = -1;
+        [SerializeField] private int _previewShadow = -1;
+        [SerializeField] private int _previewBorder = -1;
+        [SerializeField] private int _previewTrail = -1;
+
+        /// <summary>The color id assigned to a preview role, or -1 when unassigned.</summary>
+        public int GetPreviewColor(PreviewRole role)
+        {
+            switch (role)
+            {
+                case PreviewRole.Scrim: return _previewScrim;
+                case PreviewRole.Shadow: return _previewShadow;
+                case PreviewRole.Border: return _previewBorder;
+                case PreviewRole.Trail: return _previewTrail;
+                default: return -1;
+            }
+        }
+
+        public void SetPreviewColor(PreviewRole role, int colorId)
+        {
+            switch (role)
+            {
+                case PreviewRole.Scrim: _previewScrim = colorId; break;
+                case PreviewRole.Shadow: _previewShadow = colorId; break;
+                case PreviewRole.Border: _previewBorder = colorId; break;
+                case PreviewRole.Trail: _previewTrail = colorId; break;
+                default: return;
+            }
+
+            onChange?.Invoke();
+        }
+
         public ThemeStyles styles => _styles;
 
         public event Action onChange;
