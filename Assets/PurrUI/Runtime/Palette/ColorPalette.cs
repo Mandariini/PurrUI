@@ -9,8 +9,8 @@ namespace PurrNet.UI
     public class ColorPalette : ScriptableObject
     {
         [Header("Colors")]
-        [Tooltip("The project's colors. Order defines the numbering (ColorInfo stores an index), " +
-                 "so append new colors at the end rather than inserting them in the middle.")]
+        [Tooltip("The project's colors. Each entry has a stable id that references point at, " +
+                 "so entries can be added, removed or reordered freely.")]
         [SerializeField] private List<PaletteColor> _colors = new();
 
         // Legacy value fields: only used to seed _colors for palettes created before the list
@@ -39,10 +39,10 @@ namespace PurrNet.UI
 
         public event Action onChange;
 
-        /// <summary>Number of colors in the palette (= the valid ColorInfo indices).</summary>
+        /// <summary>Number of colors in the palette.</summary>
         public int count => _colors?.Count ?? 0;
 
-        /// <summary>The palette's colors, in index order.</summary>
+        /// <summary>The palette's colors, in display order.</summary>
         public IReadOnlyList<PaletteColor> colors => _colors;
 
         private void OnEnable()
@@ -58,106 +58,164 @@ namespace PurrNet.UI
         }
 
         /// <summary>
-        /// Fills in the default colors when the list is still empty, so palettes authored before
-        /// the list existed keep their values.
+        /// Fills in default colors when the list is empty (palettes authored before the list
+        /// existed) and assigns ids to entries that don't have one yet. Seeded ids match the
+        /// legacy indices, so existing references keep resolving to the same color.
         /// </summary>
         public void EnsureSeeded()
         {
-            if (_colors != null && _colors.Count > 0)
-                return;
+            if (_colors == null)
+                _colors = new List<PaletteColor>();
 
-            _colors = new List<PaletteColor>
+            if (_colors.Count == 0)
             {
-                new PaletteColor("Accent", _accent, true, _accentForeground),
-                new PaletteColor("Surface", _surface, true, _surfaceForeground),
-                new PaletteColor("Success", _success, true, _successForeground),
-                new PaletteColor("Warning", _warning, true, _warningForeground),
-                new PaletteColor("Danger", _danger, true, _dangerForeground),
-                new PaletteColor("Background", _background, true, _foreground),
-                new PaletteColor("Black", _black),
-                new PaletteColor("White", _white),
-                new PaletteColor("Muted", _muted),
-            };
+                _colors = new List<PaletteColor>
+                {
+                    new PaletteColor(0, "Accent", _accent, true, _accentForeground),
+                    new PaletteColor(1, "Surface", _surface, true, _surfaceForeground),
+                    new PaletteColor(2, "Success", _success, true, _successForeground),
+                    new PaletteColor(3, "Warning", _warning, true, _warningForeground),
+                    new PaletteColor(4, "Danger", _danger, true, _dangerForeground),
+                    new PaletteColor(5, "Background", _background, true, _foreground),
+                    new PaletteColor(6, "Black", _black),
+                    new PaletteColor(7, "White", _white),
+                    new PaletteColor(8, "Muted", _muted),
+                };
+                return;
+            }
+
+            // Backfill ids for entries saved before ids existed: by position, which equals the
+            // index their references used.
+            bool needsBackfill = true;
+            for (int i = 0; i < _colors.Count; i++)
+            {
+                if (_colors[i].id != 0)
+                {
+                    needsBackfill = false;
+                    break;
+                }
+            }
+
+            if (needsBackfill)
+            {
+                for (int i = 0; i < _colors.Count; i++)
+                    _colors[i].id = i;
+            }
         }
 
-        public bool IsValid(int index) => index >= 0 && index < count;
+        /// <summary>The entry with this id, or null.</summary>
+        public PaletteColor GetEntry(int id)
+        {
+            if (_colors == null)
+                return null;
 
-        public string GetName(int index) => IsValid(index) ? _colors[index].name : "â€”";
+            for (int i = 0; i < _colors.Count; i++)
+            {
+                if (_colors[i].id == id)
+                    return _colors[i];
+            }
 
-        public bool IsHidden(int index) => IsValid(index) && _colors[index].hidden;
+            return null;
+        }
+
+        public bool IsValid(int id) => GetEntry(id) != null;
+
+        public string GetName(int id) => GetEntry(id)?.name ?? "â€”";
+
+        public bool IsHidden(int id) => GetEntry(id)?.hidden ?? false;
 
         public Color GetColor(ColorType type) => GetColor((int)type);
 
-        public Color GetColor(int index)
+        public Color GetColor(int id)
         {
-            if (!IsValid(index))
+            var entry = GetEntry(id);
+            if (entry == null)
             {
-                Debug.LogWarning($"[PurrUI] ColorPalette '{name}' has no color at index {index}; using magenta.", this);
+                Debug.LogWarning($"[PurrUI] ColorPalette '{name}' has no color with id {id}; using magenta.", this);
                 return Color.magenta;
             }
 
-            return _colors[index].color;
+            return entry.color;
         }
 
         public Color GetContrast(ColorType type) => GetContrast((int)type);
 
-        public Color GetContrast(int index)
+        public Color GetContrast(int id)
         {
-            if (!IsValid(index))
-                return Color.white;
-
-            return _colors[index].ResolveContrast();
+            var entry = GetEntry(id);
+            return entry != null ? entry.ResolveContrast() : Color.white;
         }
 
         public void SetColor(ColorType type, Color color) => SetColor((int)type, color);
 
-        public void SetColor(int index, Color color)
+        public void SetColor(int id, Color color)
         {
-            if (!IsValid(index))
+            var entry = GetEntry(id);
+            if (entry == null)
                 return;
 
-            _colors[index].color = color;
+            entry.color = color;
             onChange?.Invoke();
         }
 
         public void SetContrast(ColorType type, Color color) => SetContrast((int)type, color);
 
         /// <summary>Sets (and enables) the entry's foreground color.</summary>
-        public void SetContrast(int index, Color color)
+        public void SetContrast(int id, Color color)
         {
-            if (!IsValid(index))
+            var entry = GetEntry(id);
+            if (entry == null)
                 return;
 
-            _colors[index].hasContrast = true;
-            _colors[index].contrast = color;
+            entry.hasContrast = true;
+            entry.contrast = color;
             onChange?.Invoke();
-        }
-
-        /// <summary>Appends a project color. Appending keeps every existing index valid.</summary>
-        public int AddColor(string name, Color color, bool hasContrast = false, Color contrast = default)
-        {
-            _colors.Add(new PaletteColor(name, color, hasContrast, contrast));
-            onChange?.Invoke();
-            return _colors.Count - 1;
         }
 
         /// <summary>
-        /// Removes a color. Everything after it shifts down, so any ColorInfo pointing past
-        /// this index starts referencing a different color â€” only do this at the end, or remap usages.
+        /// Appends a project color with a fresh id. Never reuses ids, so existing references are
+        /// unaffected by the addition.
         /// </summary>
-        public void RemoveColor(int index)
+        public PaletteColor AddColor(string name, Color color, bool hasContrast = false, Color contrast = default)
         {
-            if (!IsValid(index))
-                return;
-
-            _colors.RemoveAt(index);
+            var entry = new PaletteColor(NextId(), name, color, hasContrast, contrast);
+            _colors.Add(entry);
             onChange?.Invoke();
+            return entry;
+        }
+
+        /// <summary>
+        /// Removes a color by id. References to it stop resolving (magenta + a warning at runtime),
+        /// so prefer hiding a color that is still used.
+        /// </summary>
+        public bool RemoveColor(int id)
+        {
+            for (int i = 0; i < _colors.Count; i++)
+            {
+                if (_colors[i].id != id)
+                    continue;
+
+                _colors.RemoveAt(i);
+                onChange?.Invoke();
+                return true;
+            }
+
+            return false;
         }
 
         public void SetStyles(ThemeStyles value)
         {
             _styles = value.Sanitize();
             onChange?.Invoke();
+        }
+
+        private int NextId()
+        {
+            int max = -1;
+            for (int i = 0; i < _colors.Count; i++)
+                max = Mathf.Max(max, _colors[i].id);
+
+            return max + 1;
         }
     }
 }
